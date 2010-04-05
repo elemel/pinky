@@ -39,6 +39,25 @@ def distance(p1, p2):
     """return the distance of two points"""
     return math.sqrt(squared_distance(p1, p2))
 
+class Document(object):
+    def __init__(self, file, flatten=('style', 'desc'), index='id'):
+        document = minidom.parse(file)
+        svg_element = document.getElementsByTagName('svg')[0]
+        self.root = parse_element(svg_element, None)
+        self.elements = {}
+        if flatten:
+            for attr in flatten:
+                self.flatten(attr)
+        self.reindex(index)
+
+    def flatten(self, attr):
+        self.root._flatten(attr)
+
+    def reindex(self, attr='id'):
+        self.elements.clear()
+        if id is not None:
+            self.root._reindex(self, attr)
+
 class Element(object):
     def __init__(self):
         self.parent = None
@@ -47,8 +66,33 @@ class Element(object):
         self.shapes = []
         self.attributes = {}
 
+    def _flatten(self, attr):
+        value = self.attributes.pop(attr, None)
+        if value is not None:
+            attributes = parse_style(value)
+            self.attributes.update(attributes)
+        for child in self.children:
+            child._flatten(attr)
+
+    def _reindex(self, document, attr):
+        value = self.attributes.get(attr)
+        if value:
+            document.elements[value] = self
+        for child in self.children:
+            child._reindex(document, attr)
+
 class Shape(object):
-    pass
+    @property
+    def aabb(self):
+        raise NotImplementedError()
+
+    @property
+    def area(self):
+        raise NotImplementedError()
+
+    @property
+    def centroid(self):
+        raise NotImplementedError()
 
 class Path(Shape):
     _scanner = re.Scanner([
@@ -253,6 +297,15 @@ class Line(Shape):
         x2, y2 = transform * (self.x2, self.y2)
         return Line(x1, y1, x2, y2)
 
+    @property
+    def area(self):
+        return 0.0
+
+    @property
+    def aabb(self):
+        return (min(self.x1, self.x2), min(self.y1, self.y2),
+                max(self.x1, self.x2), max(self.y1, self.y2))
+
 class Polyline(Shape):
     def __init__(self, points):
         self.points = list(points)
@@ -262,6 +315,15 @@ class Polyline(Shape):
 
     def __rmul__(self, transform):
         return Polyline(transform * p for p in self.points)
+
+    @property
+    def area(self):
+        return 0.0
+
+    @property
+    def aabb(self):
+        xs, ys = zip(*self.points)
+        return min(xs), min(ys), max(xs), max(ys)
 
 class Polygon(Shape):
     def __init__(self, points):
@@ -282,6 +344,11 @@ class Polygon(Shape):
             x2, y2 = self.points[(i + 1) % len(self.points)]
             area += x1 * y2 - x2 * y1
         return area / 2.0
+
+    @property
+    def aabb(self):
+        xs, ys = zip(*self.points)
+        return min(xs), min(ys), max(xs), max(ys)
 
     def repair(self, epsilon=0.0):
         if (len(self.points) >= 2 and
@@ -305,13 +372,13 @@ class Circle(Shape):
         return Circle(cx, cy, r)
 
     @property
-    def c(self):
+    def centroid(self):
         return self.cx, self.cy
 
-def parse(file):
-    document = minidom.parse(file)
-    svg_element = document.getElementsByTagName('svg')[0]
-    return parse_element(svg_element, None)
+    @property
+    def aabb(self):
+        return (self.cx - self.r, self.cy - self.r,
+                self.cx + self.r, self.cy + self.r)
 
 def get_element_text(xml_element):
     text = ''.join(child.nodeValue for child in xml_element.childNodes
@@ -351,7 +418,7 @@ def parse_path_element(xml_element, pinky_element):
     if xml_element.getAttribute('sodipodi:type') == 'arc':
         return parse_arc_element(xml_element, pinky_element)
     path = Path(xml_element.getAttribute('d'))
-    pinky_element.shapes.extend(path.linearize())
+    pinky_element.shapes.append(path)
 
 def parse_arc_element(xml_element, pinky_element):
     cx = float(xml_element.getAttribute('sodipodi:cx') or '0')
@@ -384,6 +451,13 @@ def parse_color(color_str):
                 int(color_str[5:7], 16))
     else:
         raise ParseError('invalid color: ' + color_str)
+
+def parse_float_color(color_str):
+    color = parse_color(color_str)
+    if color is not None:
+        red, green, blue = color
+        color = float(red) / 255.0, float(green) / 255.0, float(blue) / 255.0
+    return color
 
 class Transform(object):
     def __init__(self, *args):
