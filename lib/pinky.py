@@ -94,6 +94,60 @@ class Shape(object):
     def centroid(self):
         raise NotImplementedError()
 
+class AABB(Shape):
+    def __init__(self, x1=float('inf'), y1=float('inf'), x2=float('-inf'),
+                 y2=float('-inf')):
+        self.x1 = x1
+        self.y1 = y1
+        self.x2 = x2
+        self.y2 = y2
+
+    @classmethod
+    def from_shape(cls, shape):
+        if isinstance(shape, tuple):
+            x, y = shape
+            return AABB(x, y, x, y)
+        else:
+            return shape.aabb
+
+    def grow(self, shape):
+        aabb = self.from_shape(shape)
+        self.x1 = min(self.x1, aabb.x1)
+        self.y1 = min(self.y1, aabb.y1)
+        self.x2 = max(self.x2, aabb.x2)
+        self.y2 = max(self.y2, aabb.y2)
+
+    def __nonzero__(self):
+        return self.width >= 0.0 and self.height >= 0.0
+
+    @property
+    def aabb(self):
+        return self
+
+    @property
+    def width(self):
+        return self.x2 - self.x1
+
+    @property
+    def height(self):
+        return self.y2 - self.y1
+
+    @property
+    def area(self):
+        return self.width * self.height
+
+    @property
+    def x(self):
+        return 0.5 * (self.x1 + self.x2)
+
+    @property
+    def y(self):
+        return 0.5 * (self.y1 + self.y2)
+
+    @property
+    def centroid(self):
+        return self.x, self.y
+
 class Path(Shape):
     _scanner = re.Scanner([
         ('[MmZzLlHhVvCcSsQqTtAa]', (lambda s, t: t)),
@@ -379,6 +433,15 @@ class Circle(Shape):
     def aabb(self):
         return (self.cx - self.r, self.cy - self.r,
                 self.cx + self.r, self.cy + self.r)
+
+class Rect(Shape):
+    def __init__(self, x, y, width, height, rx, ry):
+        self.x = x
+        self.y = y
+        self.width = width
+        self.height = height
+        self.rx = rx
+        self.ry = ry
 
 def get_element_text(xml_element):
     text = ''.join(child.nodeValue for child in xml_element.childNodes
