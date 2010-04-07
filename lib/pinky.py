@@ -353,7 +353,7 @@ class Path(Shape):
             self.commands = list(arg)
 
     def transform(self, matrix):
-        return self.linearize().transform(matrix)
+        return Group(self.linearize()).transform(matrix)
 
     @classmethod
     def _parse_commands(cls, path_str):
@@ -496,7 +496,6 @@ class Path(Shape):
             yield Path(commands)
 
     def linearize(self):
-        shapes = []
         for path in self.subpaths:
             points = []
             closed = False
@@ -506,17 +505,15 @@ class Path(Shape):
                 else:
                     points.append(command[-2:])
             if closed:
-                shape = Polygon(points)
+                yield Polygon(points)
             else:
                 if len(points) == 2:
                     p1, p2 = points
                     x1, y1 = p1
                     x2, y2 = p2
-                    shape = Line(x1, y1, x2, y2)
+                    yield Line(x1, y1, x2, y2)
                 else:
-                    shape = Polyline(points)
-            shapes.append(shape)
-        return Group(shapes)
+                    yield Polyline(points)
 
     def __str__(self):
         return ' '.join(self._format_command(c) for c in self.commands)
