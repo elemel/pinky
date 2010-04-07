@@ -95,7 +95,7 @@ class Element(object):
     def _update_envelope(self, document, parent_matrix):
         matrix = parent_matrix * self.matrix
         for shape in self.shapes:
-            transformed_shape = matrix * shape
+            transformed_shape = matrix.transform(shape)
             document.envelope.add(transformed_shape)
         for child in self.children:
             child._update_envelope(document, matrix)
@@ -163,7 +163,7 @@ class Envelope(Shape):
     def centroid(self):
         return self.x, self.y
 
-class Point(object):
+class Point(Shape):
     def __init__(self, x, y):
         self.x = x
         self.y = y
@@ -189,14 +189,34 @@ class Line(Shape):
         return ('Line(x1=%r, y1=%r, x2=%r, y2=%r)' %
                 (self.x1, self.y1, self.x2, self.y2))
 
-    def __rmul__(self, matrix):
-        x1, y1 = matrix * (self.x1, self.y1)
-        x2, y2 = matrix * (self.x2, self.y2)
+    def transform(self, matrix):
+        x1, y1 = matrix.transform(self.p1)
+        x2, y2 = matrix.transform(self.p2)
         return Line(x1, y1, x2, y2)
+
+    @property
+    def p1(self):
+        return self.x1, self.y1
+
+    @property
+    def p2(self):
+        return self.x2, self.y2
 
     @property
     def area(self):
         return 0.0
+
+    @property
+    def x(self):
+        return 0.5 * (self.x1 + self.x2)
+
+    @property
+    def y(self):
+        return 0.5 * (self.y1 + self.y2)
+
+    @property
+    def centroid(self):
+        return self.x, self.y
 
     @property
     def envelope(self):
@@ -213,8 +233,8 @@ class Polyline(Shape):
     def __repr__(self):
         return 'Polyline(%r)' % self.points
 
-    def __rmul__(self, matrix):
-        return Polyline(matrix * p for p in self.points)
+    def transform(self, matrix):
+        return Polyline(matrix.transform(p) for p in self.points)
 
     @property
     def area(self):
@@ -232,8 +252,8 @@ class Polygon(Shape):
     def __repr__(self):
         return 'Polygon(%r)' % self.points
 
-    def __rmul__(self, matrix):
-        return Polygon(matrix * p for p in self.points)
+    def transform(self, matrix):
+        return Polygon(matrix.transform(p) for p in self.points)
 
     @property
     def area(self):
@@ -265,9 +285,9 @@ class Circle(Shape):
     def __repr__(self):
         return 'Circle(cx=%r, cy=%r, r=%r)' % (self.cx, self.cy, self.r)
 
-    def __rmul__(self, matrix):
-        cx, cy = matrix * (self.cx, self.cy)
-        px, py = matrix * (self.cx + self.r, self.cy)
+    def transform(self, matrix):
+        cx, cy = matrix.transform((self.cx, self.cy))
+        px, py = matrix.transform((self.cx + self.r, self.cy))
         r = math.sqrt((px - cx) ** 2 + (py - cy) ** 2)
         return Circle(cx, cy, r)
 
@@ -299,15 +319,19 @@ class Group(Shape):
     def __iter__(self):
         return iter(self.shapes)
 
-    def __rmul__(self, matrix):
-        return Group(matrix * s for s in self.shapes)
+    def transform(self, matrix):
+        return Group(s.transform(matrix) for s in self)
 
     @property
     def envelope(self):
         envelope = Envelope()
-        for shape in self.shapes:
+        for shape in self:
             envelope.add(shape)
         return envelope
+
+    @property
+    def area(self):
+        return sum(s.area for s in self)
 
 class Path(Shape):
     _scanner = re.Scanner([
@@ -328,8 +352,8 @@ class Path(Shape):
         else:
             self.commands = list(arg)
 
-    def __rmul__(self, matrix):
-        return matrix * self.linearize()
+    def transform(self, matrix):
+        return self.linearize().transform(matrix)
 
     @classmethod
     def _parse_commands(cls, path_str):
@@ -635,12 +659,18 @@ class Matrix(object):
             e3 = a1 * e2 + c1 * f2 + e1
             f3 = b1 * e2 + d1 * f2 + f1
             return Matrix(a3, b3, c3, d3, e3, f3)
-        elif isinstance(other, tuple):
-            a, b, c, d, e, f = self.abcdef
-            x, y = other
-            return a * x + c * y + e, b * x + d * y + f
         else:
             return NotImplemented
+
+    def transform(self, shape):
+        if isinstance(shape, tuple):
+            a, b, c, d, e, f = self.abcdef
+            x, y = shape
+            return a * x + c * y + e, b * x + d * y + f
+        elif isinstance(shape, Shape):
+            return shape.transform(self)
+        else:
+            raise TypeError('invalid shape type')
 
     @classmethod
     def from_matrix(cls, a=1.0, b=0.0, c=0.0, d=1.0, e=0.0, f=0.0):

@@ -77,7 +77,7 @@ class GameEngine(object):
         else:
             shapes = [shape]
         for shape in shapes:
-            transformed_shape = matrix * shape
+            transformed_shape = matrix.transform(shape)
             self.shapes.append((transformed_shape, fill, stroke))
 
     def on_draw(self):
