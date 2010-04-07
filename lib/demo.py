@@ -44,15 +44,8 @@ class GameEngine(object):
         self.width = width
         self.height = height
         self.shapes = []
-        self.min_x = self.min_y = float('inf')
-        self.max_x = self.max_y = float('-inf')
-        self.load_shapes(self.document.root,
-                         pinky.Matrix.from_scale(1.0, -1.0))
-        self.camera_x = 0.5 * (self.min_x + self.max_x)
-        self.camera_y = 0.5 * (self.min_y + self.max_y)
-        scale_x = float(self.width) / (self.max_x - self.min_x)
-        scale_y = float(self.height) / (self.max_y - self.min_y)
-        self.camera_scale = 0.8 * min(scale_x, scale_y)
+        self.load_shapes(self.document.root, self.document.matrix)
+        self.init_camera()
         page_color_str = self.document.root.attributes.get('pagecolor', 'none')
         page_color = pinky.parse_float_color(page_color_str)
         if page_color is None:
@@ -60,6 +53,14 @@ class GameEngine(object):
         else:
             page_red, page_green, page_blue = page_color
             self.clear_color = page_red, page_green, page_blue, 1.0
+
+    def init_camera(self):
+        envelope = self.document.envelope
+        self.camera_x = envelope.x
+        self.camera_y = envelope.y
+        scale_x = float(self.width) / envelope.width
+        scale_y = float(self.height) / envelope.height
+        self.camera_scale = 0.8 * min(scale_x, scale_y)
 
     def load_shapes(self, element, parent_matrix):
         fill = pinky.parse_float_color(element.attributes.get('fill', 'none'))
@@ -78,14 +79,6 @@ class GameEngine(object):
         for shape in shapes:
             transformed_shape = matrix * shape
             self.shapes.append((transformed_shape, fill, stroke))
-            self.grow_envelope(transformed_shape)
-
-    def grow_envelope(self, shape):
-        min_x, min_y, max_x, max_y = shape.envelope
-        self.min_x = min(min_x, self.min_x)
-        self.min_y = min(min_y, self.min_y)
-        self.max_x = max(max_x, self.max_x)
-        self.max_y = max(max_y, self.max_y)
 
     def on_draw(self):
         glClearColor(*self.clear_color)
@@ -118,7 +111,7 @@ def main():
     if len(sys.argv) != 2:
         sys.stderr.write('usage: demo <svg>\n')
         sys.exit(1)
-    document = pinky.Document(sys.argv[1])
+    document = pinky.Document(sys.argv[1], matrix=pinky.Matrix.from_flip_y())
     config = pyglet.gl.Config(double_buffer=True, sample_buffers=1, samples=4,
                               depth_size=8)
     window = MyWindow(document=document, fullscreen=FULLSCREEN, config=config)

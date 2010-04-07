@@ -40,23 +40,34 @@ def distance(p1, p2):
     return math.sqrt(squared_distance(p1, p2))
 
 class Document(object):
-    def __init__(self, file, flatten=('style', 'desc'), index='id'):
+    def __init__(self, file, matrix=None, flatten=('style', 'desc'), id='id',
+                  envelope=True):
+        if matrix is None:
+            matrix = Matrix()
         document = minidom.parse(file)
         svg_element = document.getElementsByTagName('svg')[0]
         self.root = parse_element(svg_element, None)
-        self.elements = {}
+        self.matrix = matrix
+        self.ids = {}
+        self.envelope = Envelope()
         if flatten:
             for attr in flatten:
                 self.flatten(attr)
-        self.reindex(index)
+        self.update_ids(id)
+        if envelope:
+            self.update_envelope()
 
     def flatten(self, attr):
         self.root._flatten(attr)
 
-    def reindex(self, attr='id'):
-        self.elements.clear()
-        if id is not None:
-            self.root._reindex(self, attr)
+    def update_ids(self, attr='id'):
+        self.ids.clear()
+        if attr is not None:
+            self.root._update_ids(self, attr)
+
+    def update_envelope(self):
+        self.envelope = Envelope()
+        self.root._update_envelope(self, self.matrix)
 
 class Element(object):
     def __init__(self):
@@ -74,12 +85,20 @@ class Element(object):
         for child in self.children:
             child._flatten(attr)
 
-    def _reindex(self, document, attr):
+    def _update_ids(self, document, attr):
         value = self.attributes.get(attr)
         if value:
-            document.elements[value] = self
+            document.ids[value] = self
         for child in self.children:
-            child._reindex(document, attr)
+            child._update_ids(document, attr)
+
+    def _update_envelope(self, document, parent_matrix):
+        matrix = parent_matrix * self.matrix
+        for shape in self.shapes:
+            transformed_shape = matrix * shape
+            document.envelope.add(transformed_shape)
+        for child in self.children:
+            child._update_envelope(document, matrix)
 
 class Shape(object):
     @property
@@ -102,15 +121,19 @@ class Envelope(Shape):
         self.max_x = max_x
         self.max_y = max_y
 
+    def __nonzero__(self):
+        return self.min_x <= self.max_x and self.min_y <= self.max_y
+
+    def __repr__(self):
+        return ('Envelope(min_x=%r, min_y=%r, max_x=%r, max_y=%r)' %
+                (self.min_x, self.min_y, self.max_x, self.max_y))
+
     def add(self, shape):
         envelope = shape.envelope
         self.min_x = min(self.min_x, envelope.min_x)
-        self.min_y = min(self.min_x, envelope.min_x)
+        self.min_y = min(self.min_y, envelope.min_y)
         self.max_x = max(self.max_x, envelope.max_x)
         self.max_y = max(self.max_y, envelope.max_y)
-
-    def __nonzero__(self):
-        return self.min_x <= self.max_x and self.min_y <= self.max_y
 
     @property
     def envelope(self):
@@ -118,11 +141,11 @@ class Envelope(Shape):
 
     @property
     def width(self):
-        return self.x2 - self.x1
+        return self.max_x - self.min_x
 
     @property
     def height(self):
-        return self.y2 - self.y1
+        return self.max_y - self.min_y
 
     @property
     def area(self):
@@ -130,11 +153,11 @@ class Envelope(Shape):
 
     @property
     def x(self):
-        return 0.5 * (self.x1 + self.x2)
+        return 0.5 * (self.min_x + self.max_x)
 
     @property
     def y(self):
-        return 0.5 * (self.y1 + self.y2)
+        return 0.5 * (self.min_y + self.max_y)
 
     @property
     def centroid(self):
@@ -177,8 +200,11 @@ class Line(Shape):
 
     @property
     def envelope(self):
-        return (min(self.x1, self.x2), min(self.y1, self.y2),
-                max(self.x1, self.x2), max(self.y1, self.y2))
+        min_x = min(self.x1, self.x2)
+        min_y = min(self.y1, self.y2)
+        max_x = max(self.x1, self.x2)
+        max_y = max(self.y1, self.y2)
+        return Envelope(min_x, min_y, max_x, max_y)
 
 class Polyline(Shape):
     def __init__(self, points):
@@ -197,7 +223,7 @@ class Polyline(Shape):
     @property
     def envelope(self):
         xs, ys = zip(*self.points)
-        return min(xs), min(ys), max(xs), max(ys)
+        return Envelope(min(xs), min(ys), max(xs), max(ys))
 
 class Polygon(Shape):
     def __init__(self, points):
@@ -222,7 +248,7 @@ class Polygon(Shape):
     @property
     def envelope(self):
         xs, ys = zip(*self.points)
-        return min(xs), min(ys), max(xs), max(ys)
+        return Envelope(min(xs), min(ys), max(xs), max(ys))
 
     def repair(self, epsilon=0.0):
         if (len(self.points) >= 2 and
@@ -251,8 +277,8 @@ class Circle(Shape):
 
     @property
     def envelope(self):
-        return (self.cx - self.r, self.cy - self.r,
-                self.cx + self.r, self.cy + self.r)
+        return Envelope(self.cx - self.r, self.cy - self.r,
+                        self.cx + self.r, self.cy + self.r)
 
 class Rect(Shape):
     def __init__(self, x, y, width, height, rx, ry):
@@ -262,6 +288,26 @@ class Rect(Shape):
         self.height = height
         self.rx = rx
         self.ry = ry
+
+class Group(Shape):
+    def __init__(self, shapes=[]):
+        self.shapes = list(shapes)
+
+    def __len__(self):
+        return len(self.shapes)
+
+    def __iter__(self):
+        return iter(self.shapes)
+
+    def __rmul__(self, matrix):
+        return Group(matrix * s for s in self.shapes)
+
+    @property
+    def envelope(self):
+        envelope = Envelope()
+        for shape in self.shapes:
+            envelope.add(shape)
+        return envelope
 
 class Path(Shape):
     _scanner = re.Scanner([
@@ -281,6 +327,9 @@ class Path(Shape):
             self.commands = list(commands)
         else:
             self.commands = list(arg)
+
+    def __rmul__(self, matrix):
+        return matrix * self.linearize()
 
     @classmethod
     def _parse_commands(cls, path_str):
@@ -423,6 +472,7 @@ class Path(Shape):
             yield Path(commands)
 
     def linearize(self):
+        shapes = []
         for path in self.subpaths:
             points = []
             closed = False
@@ -432,15 +482,17 @@ class Path(Shape):
                 else:
                     points.append(command[-2:])
             if closed:
-                yield Polygon(points)
+                shape = Polygon(points)
             else:
                 if len(points) == 2:
                     p1, p2 = points
                     x1, y1 = p1
                     x2, y2 = p2
-                    yield Line(x1, y1, x2, y2)
+                    shape = Line(x1, y1, x2, y2)
                 else:
-                    yield Polyline(points)
+                    shape = Polyline(points)
+            shapes.append(shape)
+        return Group(shapes)
 
     def __str__(self):
         return ' '.join(self._format_command(c) for c in self.commands)
@@ -625,3 +677,11 @@ class Matrix(object):
     def from_skew_y(cls, angle_deg):
         angle_rad = angle_deg * math.pi / 180.0
         return cls.from_matrix(b=math.tan(angle_rad))
+
+    @classmethod
+    def from_flip_x(cls):
+        return cls.from_matrix(a=-1.0)
+
+    @classmethod
+    def from_flip_y(cls):
+        return cls.from_matrix(d=-1.0)
