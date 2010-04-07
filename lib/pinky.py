@@ -83,7 +83,7 @@ class Element(object):
 
 class Shape(object):
     @property
-    def aabb(self):
+    def envelope(self):
         raise NotImplementedError()
 
     @property
@@ -94,34 +94,26 @@ class Shape(object):
     def centroid(self):
         raise NotImplementedError()
 
-class AABB(Shape):
-    def __init__(self, x1=float('inf'), y1=float('inf'), x2=float('-inf'),
-                 y2=float('-inf')):
-        self.x1 = x1
-        self.y1 = y1
-        self.x2 = x2
-        self.y2 = y2
+class Envelope(Shape):
+    def __init__(self, min_x=float('inf'), min_y=float('inf'),
+                 max_x=float('-inf'), max_y=float('-inf')):
+        self.min_x = min_x
+        self.min_y = min_y
+        self.max_x = max_x
+        self.max_y = max_y
 
-    @classmethod
-    def from_shape(cls, shape):
-        if isinstance(shape, tuple):
-            x, y = shape
-            return AABB(x, y, x, y)
-        else:
-            return shape.aabb
-
-    def grow(self, shape):
-        aabb = self.from_shape(shape)
-        self.x1 = min(self.x1, aabb.x1)
-        self.y1 = min(self.y1, aabb.y1)
-        self.x2 = max(self.x2, aabb.x2)
-        self.y2 = max(self.y2, aabb.y2)
+    def add(self, shape):
+        envelope = shape.envelope
+        self.min_x = min(self.min_x, envelope.min_x)
+        self.min_y = min(self.min_x, envelope.min_x)
+        self.max_x = max(self.max_x, envelope.max_x)
+        self.max_y = max(self.max_y, envelope.max_y)
 
     def __nonzero__(self):
-        return self.width >= 0.0 and self.height >= 0.0
+        return self.min_x <= self.max_x and self.min_y <= self.max_y
 
     @property
-    def aabb(self):
+    def envelope(self):
         return self
 
     @property
@@ -147,6 +139,129 @@ class AABB(Shape):
     @property
     def centroid(self):
         return self.x, self.y
+
+class Point(object):
+    def __init__(self, x, y):
+        self.x = x
+        self.y = y
+
+    @property
+    def envelope(self):
+        return Envelope(self.x, self.y, self.x, self.y)
+
+    @property
+    def area(self):
+        return 0.0
+
+    @property
+    def centroid(self):
+        return self.x, self.y
+
+class Line(Shape):
+    def __init__(self, x1, y1, x2, y2):
+        self.x1, self.y1 = x1, y1
+        self.x2, self.y2 = x2, y2
+
+    def __repr__(self):
+        return ('Line(x1=%r, y1=%r, x2=%r, y2=%r)' %
+                (self.x1, self.y1, self.x2, self.y2))
+
+    def __rmul__(self, transform):
+        x1, y1 = transform * (self.x1, self.y1)
+        x2, y2 = transform * (self.x2, self.y2)
+        return Line(x1, y1, x2, y2)
+
+    @property
+    def area(self):
+        return 0.0
+
+    @property
+    def envelope(self):
+        return (min(self.x1, self.x2), min(self.y1, self.y2),
+                max(self.x1, self.x2), max(self.y1, self.y2))
+
+class Polyline(Shape):
+    def __init__(self, points):
+        self.points = list(points)
+
+    def __repr__(self):
+        return 'Polyline(%r)' % self.points
+
+    def __rmul__(self, transform):
+        return Polyline(transform * p for p in self.points)
+
+    @property
+    def area(self):
+        return 0.0
+
+    @property
+    def envelope(self):
+        xs, ys = zip(*self.points)
+        return min(xs), min(ys), max(xs), max(ys)
+
+class Polygon(Shape):
+    def __init__(self, points):
+        self.points = list(points)
+
+    def __repr__(self):
+        return 'Polygon(%r)' % self.points
+
+    def __rmul__(self, transform):
+        return Polygon(transform * p for p in self.points)
+
+    @property
+    def area(self):
+        # http://mathworld.wolfram.com/PolygonArea.html
+        area = 0.0
+        for i in xrange(len(self.points)):
+            x1, y1 = self.points[i]
+            x2, y2 = self.points[(i + 1) % len(self.points)]
+            area += x1 * y2 - x2 * y1
+        return area / 2.0
+
+    @property
+    def envelope(self):
+        xs, ys = zip(*self.points)
+        return min(xs), min(ys), max(xs), max(ys)
+
+    def repair(self, epsilon=0.0):
+        if (len(self.points) >= 2 and
+            squared_distance(self.points[0], self.points[-1]) < epsilon ** 2):
+            self.points.pop()
+        if self.area < 0.0:
+            self.points.reverse()
+
+class Circle(Shape):
+    def __init__(self, cx, cy, r):
+        self.cx, self.cy = cx, cy
+        self.r = r
+
+    def __repr__(self):
+        return 'Circle(cx=%r, cy=%r, r=%r)' % (self.cx, self.cy, self.r)
+
+    def __rmul__(self, transform):
+        cx, cy = transform * (self.cx, self.cy)
+        px, py = transform * (self.cx + self.r, self.cy)
+        r = math.sqrt((px - cx) ** 2 + (py - cy) ** 2)
+        return Circle(cx, cy, r)
+
+    @property
+    def centroid(self):
+        return self.cx, self.cy
+
+    @property
+    def envelope(self):
+        return (self.cx - self.r, self.cy - self.r,
+                self.cx + self.r, self.cy + self.r)
+
+class Rect(Shape):
+    def __init__(self, x, y, width, height, rx, ry):
+        self.x = x
+        self.y = y
+        self.width = width
+        self.height = height
+        self.rx = rx
+        self.ry = ry
 
 class Path(Shape):
     _scanner = re.Scanner([
@@ -336,112 +451,6 @@ class Path(Shape):
         parts = [name]
         parts.extend('%g' % arg for arg in args)
         return ' '.join(parts)
-
-class Line(Shape):
-    def __init__(self, x1, y1, x2, y2):
-        self.x1, self.y1 = x1, y1
-        self.x2, self.y2 = x2, y2
-
-    def __repr__(self):
-        return ('Line(x1=%r, y1=%r, x2=%r, y2=%r)' %
-                (self.x1, self.y1, self.x2, self.y2))
-
-    def __rmul__(self, transform):
-        x1, y1 = transform * (self.x1, self.y1)
-        x2, y2 = transform * (self.x2, self.y2)
-        return Line(x1, y1, x2, y2)
-
-    @property
-    def area(self):
-        return 0.0
-
-    @property
-    def aabb(self):
-        return (min(self.x1, self.x2), min(self.y1, self.y2),
-                max(self.x1, self.x2), max(self.y1, self.y2))
-
-class Polyline(Shape):
-    def __init__(self, points):
-        self.points = list(points)
-
-    def __repr__(self):
-        return 'Polyline(%r)' % self.points
-
-    def __rmul__(self, transform):
-        return Polyline(transform * p for p in self.points)
-
-    @property
-    def area(self):
-        return 0.0
-
-    @property
-    def aabb(self):
-        xs, ys = zip(*self.points)
-        return min(xs), min(ys), max(xs), max(ys)
-
-class Polygon(Shape):
-    def __init__(self, points):
-        self.points = list(points)
-
-    def __repr__(self):
-        return 'Polygon(%r)' % self.points
-
-    def __rmul__(self, transform):
-        return Polygon(transform * p for p in self.points)
-
-    @property
-    def area(self):
-        # http://mathworld.wolfram.com/PolygonArea.html
-        area = 0.0
-        for i in xrange(len(self.points)):
-            x1, y1 = self.points[i]
-            x2, y2 = self.points[(i + 1) % len(self.points)]
-            area += x1 * y2 - x2 * y1
-        return area / 2.0
-
-    @property
-    def aabb(self):
-        xs, ys = zip(*self.points)
-        return min(xs), min(ys), max(xs), max(ys)
-
-    def repair(self, epsilon=0.0):
-        if (len(self.points) >= 2 and
-            squared_distance(self.points[0], self.points[-1]) < epsilon ** 2):
-            self.points.pop()
-        if self.area < 0.0:
-            self.points.reverse()
-
-class Circle(Shape):
-    def __init__(self, cx, cy, r):
-        self.cx, self.cy = cx, cy
-        self.r = r
-
-    def __repr__(self):
-        return 'Circle(cx=%r, cy=%r, r=%r)' % (self.cx, self.cy, self.r)
-
-    def __rmul__(self, transform):
-        cx, cy = transform * (self.cx, self.cy)
-        px, py = transform * (self.cx + self.r, self.cy)
-        r = math.sqrt((px - cx) ** 2 + (py - cy) ** 2)
-        return Circle(cx, cy, r)
-
-    @property
-    def centroid(self):
-        return self.cx, self.cy
-
-    @property
-    def aabb(self):
-        return (self.cx - self.r, self.cy - self.r,
-                self.cx + self.r, self.cy + self.r)
-
-class Rect(Shape):
-    def __init__(self, x, y, width, height, rx, ry):
-        self.x = x
-        self.y = y
-        self.width = width
-        self.height = height
-        self.rx = rx
-        self.ry = ry
 
 def get_element_text(xml_element):
     text = ''.join(child.nodeValue for child in xml_element.childNodes

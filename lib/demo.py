@@ -78,10 +78,10 @@ class GameEngine(object):
         for shape in shapes:
             transformed_shape = transform * shape
             self.shapes.append((transformed_shape, fill, stroke))
-            self.grow_aabb(transformed_shape)
+            self.grow_envelope(transformed_shape)
 
-    def grow_aabb(self, shape):
-        min_x, min_y, max_x, max_y = shape.aabb
+    def grow_envelope(self, shape):
+        min_x, min_y, max_x, max_y = shape.envelope
         self.min_x = min(min_x, self.min_x)
         self.min_y = min(min_y, self.min_y)
         self.max_x = max(max_x, self.max_x)
