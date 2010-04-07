@@ -62,7 +62,7 @@ class Element(object):
     def __init__(self):
         self.parent = None
         self.children = []
-        self.transform = Transform()
+        self.matrix = Matrix()
         self.shapes = []
         self.attributes = {}
 
@@ -166,9 +166,9 @@ class Line(Shape):
         return ('Line(x1=%r, y1=%r, x2=%r, y2=%r)' %
                 (self.x1, self.y1, self.x2, self.y2))
 
-    def __rmul__(self, transform):
-        x1, y1 = transform * (self.x1, self.y1)
-        x2, y2 = transform * (self.x2, self.y2)
+    def __rmul__(self, matrix):
+        x1, y1 = matrix * (self.x1, self.y1)
+        x2, y2 = matrix * (self.x2, self.y2)
         return Line(x1, y1, x2, y2)
 
     @property
@@ -187,8 +187,8 @@ class Polyline(Shape):
     def __repr__(self):
         return 'Polyline(%r)' % self.points
 
-    def __rmul__(self, transform):
-        return Polyline(transform * p for p in self.points)
+    def __rmul__(self, matrix):
+        return Polyline(matrix * p for p in self.points)
 
     @property
     def area(self):
@@ -206,8 +206,8 @@ class Polygon(Shape):
     def __repr__(self):
         return 'Polygon(%r)' % self.points
 
-    def __rmul__(self, transform):
-        return Polygon(transform * p for p in self.points)
+    def __rmul__(self, matrix):
+        return Polygon(matrix * p for p in self.points)
 
     @property
     def area(self):
@@ -239,9 +239,9 @@ class Circle(Shape):
     def __repr__(self):
         return 'Circle(cx=%r, cy=%r, r=%r)' % (self.cx, self.cy, self.r)
 
-    def __rmul__(self, transform):
-        cx, cy = transform * (self.cx, self.cy)
-        px, py = transform * (self.cx + self.r, self.cy)
+    def __rmul__(self, matrix):
+        cx, cy = matrix * (self.cx, self.cy)
+        px, py = matrix * (self.cx + self.r, self.cy)
         r = math.sqrt((px - cx) ** 2 + (py - cy) ** 2)
         return Circle(cx, cy, r)
 
@@ -461,7 +461,7 @@ def get_element_text(xml_element):
 def parse_element(xml_element, parent):
     pinky_element = Element()
     pinky_element.parent = parent
-    pinky_element.transform = Transform(xml_element.getAttribute('transform'))
+    pinky_element.matrix = Matrix(xml_element.getAttribute('transform'))
     if xml_element.hasAttribute('id'):
         pinky_element.attributes['id'] = xml_element.getAttribute('id')
     if xml_element.hasAttribute('inkscape:label'):
@@ -531,49 +531,49 @@ def parse_float_color(color_str):
         color = float(red) / 255.0, float(green) / 255.0, float(blue) / 255.0
     return color
 
-class Transform(object):
+class Matrix(object):
     def __init__(self, *args):
         if not args:
             self.abcdef = 1.0, 0.0, 0.0, 1.0, 0.0, 0.0
         elif len(args) == 6:
             self.abcdef = args
         elif len(args) == 1 and isinstance(args[0], basestring):
-            transform = self._parse(args[0])
-            self.abcdef = transform.abcdef
+            matrix = self._parse(args[0])
+            self.abcdef = matrix.abcdef
         else:
             raise ValueError('invalid arguments for initializer')
 
     @classmethod
-    def _parse(cls, transform_str):
-        transform = Transform()
-        for part in transform_str.replace(',', ' ').split(')')[:-1]:
-            name, args = part.strip().split('(')
+    def _parse(cls, transform_list_str):
+        matrix = Matrix()
+        for transform_str in transform_list_str.replace(',', ' ').split(')')[:-1]:
+            name, args = transform_str.strip().split('(')
             name = name.rstrip()
             args = map(float, args.split())
             if name == 'matrix':
-                transform *= cls(*args)
+                matrix *= cls(*args)
             elif name == 'translate':
-                transform *= cls.from_translate(*args)
+                matrix *= cls.from_translate(*args)
             elif name == 'scale':
-                transform *= cls.from_scale(*args)
+                matrix *= cls.from_scale(*args)
             elif name == 'rotate':
-                transform *= cls.from_rotate(*args)
+                matrix *= cls.from_rotate(*args)
             elif name == 'skewX':
-                transform *= cls.from_skew_x(*args)
+                matrix *= cls.from_skew_x(*args)
             elif name == 'skewY':
-                transform *= cls.from_skew_y(*args)
+                matrix *= cls.from_skew_y(*args)
             else:
-                raise ParseError('invalid transform name: ' + name)
-        return transform
+                raise ParseError('invalid transform: ' + name)
+        return matrix
 
     def __str__(self):
         return 'matrix(%g %g %g %g %g %g)' % self.abcdef
 
     def __repr__(self):
-        return 'Transform(%r, %r, %r, %r, %r, %r)' % self.abcdef
+        return 'Matrix(%r, %r, %r, %r, %r, %r)' % self.abcdef
 
     def __mul__(self, other):
-        if isinstance(other, Transform):
+        if isinstance(other, Matrix):
             a1, b1, c1, d1, e1, f1 = self.abcdef
             a2, b2, c2, d2, e2, f2 = other.abcdef
             a3 = a1 * a2 + c1 * b2
@@ -582,7 +582,7 @@ class Transform(object):
             d3 = b1 * c2 + d1 * d2
             e3 = a1 * e2 + c1 * f2 + e1
             f3 = b1 * e2 + d1 * f2 + f1
-            return Transform(a3, b3, c3, d3, e3, f3)
+            return Matrix(a3, b3, c3, d3, e3, f3)
         elif isinstance(other, tuple):
             a, b, c, d, e, f = self.abcdef
             x, y = other

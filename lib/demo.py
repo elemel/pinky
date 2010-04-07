@@ -47,7 +47,7 @@ class GameEngine(object):
         self.min_x = self.min_y = float('inf')
         self.max_x = self.max_y = float('-inf')
         self.load_shapes(self.document.root,
-                         pinky.Transform.from_scale(1.0, -1.0))
+                         pinky.Matrix.from_scale(1.0, -1.0))
         self.camera_x = 0.5 * (self.min_x + self.max_x)
         self.camera_y = 0.5 * (self.min_y + self.max_y)
         scale_x = float(self.width) / (self.max_x - self.min_x)
@@ -61,22 +61,22 @@ class GameEngine(object):
             page_red, page_green, page_blue = page_color
             self.clear_color = page_red, page_green, page_blue, 1.0
 
-    def load_shapes(self, element, parent_transform):
+    def load_shapes(self, element, parent_matrix):
         fill = pinky.parse_float_color(element.attributes.get('fill', 'none'))
         stroke = pinky.parse_float_color(element.attributes.get('stroke', 'none'))
-        transform = parent_transform * element.transform
+        matrix = parent_matrix * element.matrix
         for shape in element.shapes:
-            self.add_shape(shape, transform, fill, stroke)
+            self.add_shape(shape, matrix, fill, stroke)
         for child in element.children:
-            self.load_shapes(child, transform)
+            self.load_shapes(child, matrix)
 
-    def add_shape(self, shape, transform, fill, stroke):
+    def add_shape(self, shape, matrix, fill, stroke):
         if isinstance(shape, pinky.Path):
             shapes = shape.linearize()
         else:
             shapes = [shape]
         for shape in shapes:
-            transformed_shape = transform * shape
+            transformed_shape = matrix * shape
             self.shapes.append((transformed_shape, fill, stroke))
             self.grow_envelope(transformed_shape)
 
