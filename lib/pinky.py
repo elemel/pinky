@@ -569,7 +569,7 @@ class Matrix(object):
             matrix = self._parse(args[0])
             self.abcdef = matrix.abcdef
         else:
-            raise ValueError('invalid arguments for initializer')
+            raise ValueError('invalid arguments for matrix initializer')
 
     @classmethod
     def _parse(cls, transform_list_str):
@@ -585,11 +585,11 @@ class Matrix(object):
             elif name == 'scale':
                 matrix *= cls.from_scale(*args)
             elif name == 'rotate':
-                matrix *= cls.from_rotate(*args)
+                matrix *= cls.from_rotate_deg(*args)
             elif name == 'skewX':
-                matrix *= cls.from_skew_x(*args)
+                matrix *= cls.from_skew_x_deg(*args)
             elif name == 'skewY':
-                matrix *= cls.from_skew_y(*args)
+                matrix *= cls.from_skew_y_deg(*args)
             else:
                 raise ParseError('invalid transform: ' + name)
         return matrix
@@ -625,45 +625,40 @@ class Matrix(object):
             raise TypeError('invalid shape type')
 
     @classmethod
-    def from_matrix(cls, a=1.0, b=0.0, c=0.0, d=1.0, e=0.0, f=0.0):
-        return cls(a, b, c, d, e, f)
-
-    @classmethod
     def from_translate(cls, tx, ty=0.0):
-        return cls.from_matrix(e=tx, f=ty)
+        return cls(1.0, 0.0, 0.0, 1.0, tx, ty)
 
     @classmethod
     def from_scale(cls, sx, sy=None):
         if sy is None:
             sy = sx
-        return cls.from_matrix(a=sx, d=sy)
+        return cls(sx, 0.0, 0.0, sy, 0.0, 0.0)
     
     @classmethod
-    def from_rotate(cls, angle_deg, *args):
+    def from_rotate_deg(cls, angle, *args):
         if args:
             cx, cy = args
-            return (cls.from_translate(cx, cy) * cls.from_rotate(angle_deg) *
+            return (cls.from_translate(cx, cy) * cls.from_rotate_deg(angle) *
                     cls.from_translate(-cx, -cy))
-        angle_rad = angle_deg * math.pi / 180.0
-        cos_angle = math.cos(angle_rad)
-        sin_angle = math.sin(angle_rad)
-        return cls.from_matrix(a=cos_angle, b=sin_angle, c=-sin_angle,
-                               d=cos_angle)
+        angle = angle * math.pi / 180.0
+        cos_angle = math.cos(angle)
+        sin_angle = math.sin(angle)
+        return cls(cos_angle, sin_angle, -sin_angle, cos_angle, 0.0, 0.0)
 
     @classmethod
-    def from_skew_x(cls, angle_deg):
-        angle_rad = angle_deg * math.pi / 180.0
-        return cls.from_matrix(c=math.tan(angle_rad))
+    def from_skew_x_deg(cls, angle):
+        angle = angle * math.pi / 180.0
+        return cls(1.0, 0.0, math.tan(angle), 1.0, 0.0, 0.0)
 
     @classmethod
-    def from_skew_y(cls, angle_deg):
-        angle_rad = angle_deg * math.pi / 180.0
-        return cls.from_matrix(b=math.tan(angle_rad))
+    def from_skew_y_deg(cls, angle):
+        angle = angle * math.pi / 180.0
+        return cls(1.0, math.tan(angle), 0.0, 1.0, 0.0, 0.0)
 
     @classmethod
     def from_flip_x(cls):
-        return cls.from_matrix(a=-1.0)
+        return cls(-1.0, 0.0, 0.0, 1.0, 0.0, 0.0)
 
     @classmethod
     def from_flip_y(cls):
-        return cls.from_matrix(d=-1.0)
+        return cls(1.0, 0.0, 0.0, -1.0, 0.0, 0.0)
