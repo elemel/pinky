@@ -27,87 +27,130 @@ from xml.dom import minidom
 class ParseError(Exception):
     pass
 
-class Document(object):
-    def __init__(self, file):
-        xml_document = minidom.parse(file)
-        xml_element = xml_document.getElementsByTagName('svg')[0]
-        self.elements = {}
-        self.root = self._parse_element(xml_element)
+def parse_color(color_str):
+    if color_str == 'none':
+        return None
+    elif len(color_str) == 7 and color_str[0] == '#':
+        return (int(color_str[1:3], 16), int(color_str[3:5], 16),
+                int(color_str[5:7], 16))
+    else:
+        raise ParseError('invalid color: ' + color_str)
 
-    def _parse_element(self, xml_element):
-        pinky_element = Element()
-        pinky_element.matrix = Matrix(xml_element.getAttribute('transform'))
-        if xml_element.hasAttribute('id'):
-            id = xml_element.getAttribute('id')
-            self.elements[id] = pinky_element
-            pinky_element.attributes['id'] = id
-        if xml_element.hasAttribute('inkscape:label'):
-            pinky_element.attributes['label'] = xml_element.getAttribute('inkscape:label')
-        if xml_element.hasAttribute('style'):
-            pinky_element.attributes['style'] = xml_element.getAttribute('style')
-        if xml_element.nodeName == 'path':
-            self._parse_path_element(xml_element, pinky_element)
-        elif xml_element.nodeName == 'rect':
-            self._parse_rect_element(xml_element, pinky_element)
-        for xml_child in xml_element.childNodes:
-            if xml_child.nodeType == xml_child.ELEMENT_NODE:
-                if xml_child.nodeName == 'title':
-                    pinky_element.attributes['title'] = get_element_text(xml_child)
-                elif xml_child.nodeName == 'desc':
-                    pinky_element.attributes['desc'] = get_element_text(xml_child)
-                elif xml_child.nodeName == 'sodipodi:namedview':
-                    if xml_child.hasAttribute('pagecolor'):
-                        pinky_element.attributes['pagecolor'] = xml_child.getAttribute('pagecolor')
-                else:
-                    child = self._parse_element(xml_child)
-                    pinky_element.children.append(child)
-        return pinky_element
+def parse_float_color(color_str):
+    color = parse_color(color_str)
+    if color is not None:
+        red, green, blue = color
+        color = float(red) / 255.0, float(green) / 255.0, float(blue) / 255.0
+    return color
+
+def parse_style(style_str):
+    lines = (l.strip() for l in style_str.split(';'))
+    pairs = (l.split(':') for l in lines if l)
+    return dict((k.strip(), v.strip()) for k, v in pairs)
+
+class Matrix(object):
+    def __init__(self, *args):
+        if not args:
+            self.abcdef = 1.0, 0.0, 0.0, 1.0, 0.0, 0.0
+        elif len(args) == 6:
+            self.abcdef = args
+        elif len(args) == 1 and isinstance(args[0], basestring):
+            matrix = self._parse(args[0])
+            self.abcdef = matrix.abcdef
+        else:
+            raise ValueError('invalid arguments for matrix initializer')
+
+    @classmethod
+    def _parse(cls, transform_list_str):
+        matrix = Matrix()
+        for transform_str in transform_list_str.replace(',', ' ').split(')')[:-1]:
+            name, args = transform_str.strip().split('(')
+            name = name.rstrip()
+            args = map(float, args.split())
+            if name == 'matrix':
+                matrix *= cls(*args)
+            elif name == 'translate':
+                matrix *= cls.from_translate(*args)
+            elif name == 'scale':
+                matrix *= cls.from_scale(*args)
+            elif name == 'rotate':
+                matrix *= cls.from_rotate_deg(*args)
+            elif name == 'skewX':
+                matrix *= cls.from_skew_x_deg(*args)
+            elif name == 'skewY':
+                matrix *= cls.from_skew_y_deg(*args)
+            else:
+                raise ParseError('invalid transform: ' + name)
+        return matrix
+
+    def __str__(self):
+        return 'matrix(%g %g %g %g %g %g)' % self.abcdef
+
+    def __repr__(self):
+        return 'Matrix(%r, %r, %r, %r, %r, %r)' % self.abcdef
+
+    def __mul__(self, other):
+        if isinstance(other, Matrix):
+            a1, b1, c1, d1, e1, f1 = self.abcdef
+            a2, b2, c2, d2, e2, f2 = other.abcdef
+            a3 = a1 * a2 + c1 * b2
+            b3 = b1 * a2 + d1 * b2
+            c3 = a1 * c2 + c1 * d2
+            d3 = b1 * c2 + d1 * d2
+            e3 = a1 * e2 + c1 * f2 + e1
+            f3 = b1 * e2 + d1 * f2 + f1
+            return Matrix(a3, b3, c3, d3, e3, f3)
+        else:
+            return NotImplemented
+
+    def transform(self, shape):
+        if isinstance(shape, tuple):
+            a, b, c, d, e, f = self.abcdef
+            x, y = shape
+            return a * x + c * y + e, b * x + d * y + f
+        elif isinstance(shape, Shape):
+            return shape.transform(self)
+        else:
+            raise TypeError('invalid shape type')
+
+    @classmethod
+    def from_translate(cls, tx, ty=0.0):
+        return cls(1.0, 0.0, 0.0, 1.0, tx, ty)
+
+    @classmethod
+    def from_scale(cls, sx, sy=None):
+        if sy is None:
+            sy = sx
+        return cls(sx, 0.0, 0.0, sy, 0.0, 0.0)
     
-    def _parse_path_element(self, xml_element, pinky_element):
-        if xml_element.getAttribute('sodipodi:type') == 'arc':
-            return self._parse_arc_element(xml_element, pinky_element)
-        path = Path(xml_element.getAttribute('d'))
-        pinky_element.shapes.append(path)
-    
-    def _parse_arc_element(self, xml_element, pinky_element):
-        cx = float(xml_element.getAttribute('sodipodi:cx') or '0')
-        cy = float(xml_element.getAttribute('sodipodi:cy') or '0')
-        rx = float(xml_element.getAttribute('sodipodi:rx'))
-        ry = float(xml_element.getAttribute('sodipodi:ry'))
-        circle = Circle(cx, cy, (rx + ry) / 2.0)
-        pinky_element.shapes.append(circle)
-    
-    def _parse_rect_element(self, xml_element, pinky_element):
-        x = float(xml_element.getAttribute('x') or '0')
-        y = float(xml_element.getAttribute('y') or '0')
-        width = float(xml_element.getAttribute('width'))
-        height = float(xml_element.getAttribute('height'))
-        points = [(x, y), (x + width, y),
-                  (x + width, y + height), (x, y + height)]
-        polygon = Polygon(points)
-        pinky_element.shapes.append(polygon)
+    @classmethod
+    def from_rotate_deg(cls, angle, *args):
+        if args:
+            cx, cy = args
+            return (cls.from_translate(cx, cy) * cls.from_rotate_deg(angle) *
+                    cls.from_translate(-cx, -cy))
+        angle = angle * math.pi / 180.0
+        cos_angle = math.cos(angle)
+        sin_angle = math.sin(angle)
+        return cls(cos_angle, sin_angle, -sin_angle, cos_angle, 0.0, 0.0)
 
-class Element(object):
-    def __init__(self):
-        self.matrix = Matrix()
-        self.attributes = {}
-        self.children = []
-        self.shapes = []
+    @classmethod
+    def from_skew_x_deg(cls, angle):
+        angle = angle * math.pi / 180.0
+        return cls(1.0, 0.0, math.tan(angle), 1.0, 0.0, 0.0)
 
-    def get_envelope(self, matrix):
-        envelope = Envelope()
-        matrix = matrix * self.matrix
-        for shape in self.shapes:
-            transformed_shape = matrix.transform(shape)
-            envelope.add(transformed_shape)
-        for child in self.children:
-            child_envelope = child.get_envelope(matrix)
-            envelope.add(child_envelope)
-        return envelope
+    @classmethod
+    def from_skew_y_deg(cls, angle):
+        angle = angle * math.pi / 180.0
+        return cls(1.0, math.tan(angle), 0.0, 1.0, 0.0, 0.0)
 
-    @property
-    def envelope(self):
-        return self.get_envelope(Matrix())
+    @classmethod
+    def from_flip_x(cls):
+        return cls(-1.0, 0.0, 0.0, 1.0, 0.0, 0.0)
+
+    @classmethod
+    def from_flip_y(cls):
+        return cls(1.0, 0.0, 0.0, -1.0, 0.0, 0.0)
 
 class Shape(object):
     @property
@@ -161,16 +204,10 @@ class Envelope(Shape):
         return self.width * self.height
 
     @property
-    def x(self):
-        return 0.5 * (self.min_x + self.max_x)
-
-    @property
-    def y(self):
-        return 0.5 * (self.min_y + self.max_y)
-
-    @property
     def centroid(self):
-        return self.x, self.y
+        cx = 0.5 * (self.min_x + self.max_x)
+        cy = 0.5 * (self.min_y + self.max_y)
+        return cx, cy
 
 class Point(Shape):
     def __init__(self, x, y):
@@ -532,133 +569,90 @@ class Path(Shape):
         parts.extend('%g' % arg for arg in args)
         return ' '.join(parts)
 
-def get_element_text(xml_element):
-    text = ''.join(child.nodeValue for child in xml_element.childNodes
-                   if child.nodeType == child.TEXT_NODE)
-    text = ' '.join(text.split())
-    return text
+class Element(object):
+    def __init__(self):
+        self.matrix = Matrix()
+        self.attributes = {}
+        self.children = []
+        self.shapes = []
 
-def parse_style(style_str):
-    lines = (l.strip() for l in style_str.split(';'))
-    pairs = (l.split(':') for l in lines if l)
-    return dict((k.strip(), v.strip()) for k, v in pairs)
+    def get_envelope(self, matrix):
+        envelope = Envelope()
+        matrix = matrix * self.matrix
+        for shape in self.shapes:
+            transformed_shape = matrix.transform(shape)
+            envelope.add(transformed_shape)
+        for child in self.children:
+            child_envelope = child.get_envelope(matrix)
+            envelope.add(child_envelope)
+        return envelope
 
-def parse_color(color_str):
-    if color_str == 'none':
-        return None
-    elif len(color_str) == 7 and color_str[0] == '#':
-        return (int(color_str[1:3], 16), int(color_str[3:5], 16),
-                int(color_str[5:7], 16))
-    else:
-        raise ParseError('invalid color: ' + color_str)
+    @property
+    def envelope(self):
+        return self.get_envelope(Matrix())
 
-def parse_float_color(color_str):
-    color = parse_color(color_str)
-    if color is not None:
-        red, green, blue = color
-        color = float(red) / 255.0, float(green) / 255.0, float(blue) / 255.0
-    return color
+class Document(object):
+    def __init__(self, file):
+        xml_document = minidom.parse(file)
+        xml_element = xml_document.getElementsByTagName('svg')[0]
+        self.elements = {}
+        self.root = self._parse_element(xml_element)
 
-class Matrix(object):
-    def __init__(self, *args):
-        if not args:
-            self.abcdef = 1.0, 0.0, 0.0, 1.0, 0.0, 0.0
-        elif len(args) == 6:
-            self.abcdef = args
-        elif len(args) == 1 and isinstance(args[0], basestring):
-            matrix = self._parse(args[0])
-            self.abcdef = matrix.abcdef
-        else:
-            raise ValueError('invalid arguments for matrix initializer')
-
-    @classmethod
-    def _parse(cls, transform_list_str):
-        matrix = Matrix()
-        for transform_str in transform_list_str.replace(',', ' ').split(')')[:-1]:
-            name, args = transform_str.strip().split('(')
-            name = name.rstrip()
-            args = map(float, args.split())
-            if name == 'matrix':
-                matrix *= cls(*args)
-            elif name == 'translate':
-                matrix *= cls.from_translate(*args)
-            elif name == 'scale':
-                matrix *= cls.from_scale(*args)
-            elif name == 'rotate':
-                matrix *= cls.from_rotate_deg(*args)
-            elif name == 'skewX':
-                matrix *= cls.from_skew_x_deg(*args)
-            elif name == 'skewY':
-                matrix *= cls.from_skew_y_deg(*args)
-            else:
-                raise ParseError('invalid transform: ' + name)
-        return matrix
-
-    def __str__(self):
-        return 'matrix(%g %g %g %g %g %g)' % self.abcdef
-
-    def __repr__(self):
-        return 'Matrix(%r, %r, %r, %r, %r, %r)' % self.abcdef
-
-    def __mul__(self, other):
-        if isinstance(other, Matrix):
-            a1, b1, c1, d1, e1, f1 = self.abcdef
-            a2, b2, c2, d2, e2, f2 = other.abcdef
-            a3 = a1 * a2 + c1 * b2
-            b3 = b1 * a2 + d1 * b2
-            c3 = a1 * c2 + c1 * d2
-            d3 = b1 * c2 + d1 * d2
-            e3 = a1 * e2 + c1 * f2 + e1
-            f3 = b1 * e2 + d1 * f2 + f1
-            return Matrix(a3, b3, c3, d3, e3, f3)
-        else:
-            return NotImplemented
-
-    def transform(self, shape):
-        if isinstance(shape, tuple):
-            a, b, c, d, e, f = self.abcdef
-            x, y = shape
-            return a * x + c * y + e, b * x + d * y + f
-        elif isinstance(shape, Shape):
-            return shape.transform(self)
-        else:
-            raise TypeError('invalid shape type')
-
-    @classmethod
-    def from_translate(cls, tx, ty=0.0):
-        return cls(1.0, 0.0, 0.0, 1.0, tx, ty)
-
-    @classmethod
-    def from_scale(cls, sx, sy=None):
-        if sy is None:
-            sy = sx
-        return cls(sx, 0.0, 0.0, sy, 0.0, 0.0)
+    def _parse_element(self, xml_element):
+        pinky_element = Element()
+        pinky_element.matrix = Matrix(xml_element.getAttribute('transform'))
+        if xml_element.hasAttribute('id'):
+            id = xml_element.getAttribute('id')
+            self.elements[id] = pinky_element
+            pinky_element.attributes['id'] = id
+        if xml_element.hasAttribute('inkscape:label'):
+            pinky_element.attributes['label'] = xml_element.getAttribute('inkscape:label')
+        if xml_element.hasAttribute('style'):
+            pinky_element.attributes['style'] = xml_element.getAttribute('style')
+        if xml_element.nodeName == 'path':
+            self._parse_path_element(xml_element, pinky_element)
+        elif xml_element.nodeName == 'rect':
+            self._parse_rect_element(xml_element, pinky_element)
+        for xml_child in xml_element.childNodes:
+            if xml_child.nodeType == xml_child.ELEMENT_NODE:
+                if xml_child.nodeName == 'title':
+                    pinky_element.attributes['title'] = self._parse_element_text(xml_child)
+                elif xml_child.nodeName == 'desc':
+                    pinky_element.attributes['desc'] = self._parse_element_text(xml_child)
+                elif xml_child.nodeName == 'sodipodi:namedview':
+                    if xml_child.hasAttribute('pagecolor'):
+                        pinky_element.attributes['pagecolor'] = xml_child.getAttribute('pagecolor')
+                else:
+                    child = self._parse_element(xml_child)
+                    pinky_element.children.append(child)
+        return pinky_element
     
-    @classmethod
-    def from_rotate_deg(cls, angle, *args):
-        if args:
-            cx, cy = args
-            return (cls.from_translate(cx, cy) * cls.from_rotate_deg(angle) *
-                    cls.from_translate(-cx, -cy))
-        angle = angle * math.pi / 180.0
-        cos_angle = math.cos(angle)
-        sin_angle = math.sin(angle)
-        return cls(cos_angle, sin_angle, -sin_angle, cos_angle, 0.0, 0.0)
+    def _parse_path_element(self, xml_element, pinky_element):
+        if xml_element.getAttribute('sodipodi:type') == 'arc':
+            return self._parse_arc_element(xml_element, pinky_element)
+        path = Path(xml_element.getAttribute('d'))
+        pinky_element.shapes.append(path)
+    
+    def _parse_arc_element(self, xml_element, pinky_element):
+        cx = float(xml_element.getAttribute('sodipodi:cx') or '0')
+        cy = float(xml_element.getAttribute('sodipodi:cy') or '0')
+        rx = float(xml_element.getAttribute('sodipodi:rx'))
+        ry = float(xml_element.getAttribute('sodipodi:ry'))
+        circle = Circle(cx, cy, (rx + ry) / 2.0)
+        pinky_element.shapes.append(circle)
+    
+    def _parse_rect_element(self, xml_element, pinky_element):
+        x = float(xml_element.getAttribute('x') or '0')
+        y = float(xml_element.getAttribute('y') or '0')
+        width = float(xml_element.getAttribute('width'))
+        height = float(xml_element.getAttribute('height'))
+        points = [(x, y), (x + width, y),
+                  (x + width, y + height), (x, y + height)]
+        polygon = Polygon(points)
+        pinky_element.shapes.append(polygon)
 
-    @classmethod
-    def from_skew_x_deg(cls, angle):
-        angle = angle * math.pi / 180.0
-        return cls(1.0, 0.0, math.tan(angle), 1.0, 0.0, 0.0)
-
-    @classmethod
-    def from_skew_y_deg(cls, angle):
-        angle = angle * math.pi / 180.0
-        return cls(1.0, math.tan(angle), 0.0, 1.0, 0.0, 0.0)
-
-    @classmethod
-    def from_flip_x(cls):
-        return cls(-1.0, 0.0, 0.0, 1.0, 0.0, 0.0)
-
-    @classmethod
-    def from_flip_y(cls):
-        return cls(1.0, 0.0, 0.0, -1.0, 0.0, 0.0)
+    def _parse_element_text(self, xml_element):
+        text = ''.join(child.nodeValue for child in xml_element.childNodes
+                       if child.nodeType == child.TEXT_NODE)
+        text = ' '.join(text.split())
+        return text

@@ -5,8 +5,6 @@ import pyglet
 from pyglet.gl import *
 import sys
 
-FULLSCREEN = True
-
 def draw_line(x1, y1, x2, y2, stroke):
     if stroke is not None:
         glColor3f(*stroke)
@@ -56,8 +54,7 @@ class GameEngine(object):
 
     def init_camera(self):
         envelope = self.document.root.envelope
-        self.camera_x = envelope.x
-        self.camera_y = envelope.y
+        self.camera_x, self.camera_y = envelope.centroid
         scale_x = float(self.width) / envelope.width
         scale_y = float(self.height) / envelope.height
         self.camera_scale = 0.8 * min(scale_x, scale_y)
@@ -118,7 +115,7 @@ def main():
     document.root.matrix = pinky.Matrix.from_flip_y()
     config = pyglet.gl.Config(double_buffer=True, sample_buffers=1, samples=4,
                               depth_size=8)
-    window = MyWindow(document=document, fullscreen=FULLSCREEN, config=config)
+    window = MyWindow(document=document, fullscreen=False, config=config)
     pyglet.app.run()
 
 if __name__ == '__main__':
