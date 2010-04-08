@@ -44,7 +44,7 @@ class GameEngine(object):
         self.width = width
         self.height = height
         self.shapes = []
-        self.load_shapes(self.document.root, self.document.matrix)
+        self.load_shapes(self.document.root, pinky.Matrix())
         self.init_camera()
         page_color_str = self.document.root.attributes.get('pagecolor', 'none')
         page_color = pinky.parse_float_color(page_color_str)
@@ -55,17 +55,20 @@ class GameEngine(object):
             self.clear_color = page_red, page_green, page_blue, 1.0
 
     def init_camera(self):
-        envelope = self.document.envelope
+        envelope = self.document.root.envelope
         self.camera_x = envelope.x
         self.camera_y = envelope.y
         scale_x = float(self.width) / envelope.width
         scale_y = float(self.height) / envelope.height
         self.camera_scale = 0.8 * min(scale_x, scale_y)
 
-    def load_shapes(self, element, parent_matrix):
-        fill = pinky.parse_float_color(element.attributes.get('fill', 'none'))
-        stroke = pinky.parse_float_color(element.attributes.get('stroke', 'none'))
-        matrix = parent_matrix * element.matrix
+    def load_shapes(self, element, matrix):
+        attributes = dict(element.attributes)
+        attributes.update(pinky.parse_style(attributes.pop('style', '')))
+        attributes.update(pinky.parse_style(attributes.pop('desc', '')))
+        matrix = matrix * element.matrix
+        fill = pinky.parse_float_color(attributes.get('fill', 'none'))
+        stroke = pinky.parse_float_color(attributes.get('stroke', 'none'))
         for shape in element.shapes:
             self.add_shape(shape, matrix, fill, stroke)
         for child in element.children:
@@ -111,7 +114,8 @@ def main():
     if len(sys.argv) != 2:
         sys.stderr.write('usage: demo <svg>\n')
         sys.exit(1)
-    document = pinky.Document(sys.argv[1], matrix=pinky.Matrix.from_flip_y())
+    document = pinky.Document(sys.argv[1])
+    document.root.matrix = pinky.Matrix.from_flip_y()
     config = pyglet.gl.Config(double_buffer=True, sample_buffers=1, samples=4,
                               depth_size=8)
     window = MyWindow(document=document, fullscreen=FULLSCREEN, config=config)

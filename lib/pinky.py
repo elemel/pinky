@@ -27,78 +27,87 @@ from xml.dom import minidom
 class ParseError(Exception):
     pass
 
-def squared_distance(p1, p2):
-    """return the squared distance of two points"""
-    x1, y1 = p1
-    x2, y2 = p2
-    dx = x2 - x1
-    dy = y2 - y1
-    return dx ** 2 + dy ** 2
-
-def distance(p1, p2):
-    """return the distance of two points"""
-    return math.sqrt(squared_distance(p1, p2))
-
 class Document(object):
-    def __init__(self, file, matrix=None, flatten=('style', 'desc'), id='id',
-                  envelope=True):
-        if matrix is None:
-            matrix = Matrix()
-        document = minidom.parse(file)
-        svg_element = document.getElementsByTagName('svg')[0]
-        self.root = parse_element(svg_element, None)
-        self.matrix = matrix
-        self.ids = {}
-        self.envelope = Envelope()
-        if flatten:
-            for attr in flatten:
-                self.flatten(attr)
-        self.update_ids(id)
-        if envelope:
-            self.update_envelope()
+    def __init__(self, file):
+        xml_document = minidom.parse(file)
+        xml_element = xml_document.getElementsByTagName('svg')[0]
+        self.elements = {}
+        self.root = self._parse_element(xml_element)
 
-    def flatten(self, attr):
-        self.root._flatten(attr)
-
-    def update_ids(self, attr='id'):
-        self.ids.clear()
-        if attr is not None:
-            self.root._update_ids(self, attr)
-
-    def update_envelope(self):
-        self.envelope = Envelope()
-        self.root._update_envelope(self, self.matrix)
+    def _parse_element(self, xml_element):
+        pinky_element = Element()
+        pinky_element.matrix = Matrix(xml_element.getAttribute('transform'))
+        if xml_element.hasAttribute('id'):
+            id = xml_element.getAttribute('id')
+            self.elements[id] = pinky_element
+            pinky_element.attributes['id'] = id
+        if xml_element.hasAttribute('inkscape:label'):
+            pinky_element.attributes['label'] = xml_element.getAttribute('inkscape:label')
+        if xml_element.hasAttribute('style'):
+            pinky_element.attributes['style'] = xml_element.getAttribute('style')
+        if xml_element.nodeName == 'path':
+            self._parse_path_element(xml_element, pinky_element)
+        elif xml_element.nodeName == 'rect':
+            self._parse_rect_element(xml_element, pinky_element)
+        for xml_child in xml_element.childNodes:
+            if xml_child.nodeType == xml_child.ELEMENT_NODE:
+                if xml_child.nodeName == 'title':
+                    pinky_element.attributes['title'] = get_element_text(xml_child)
+                elif xml_child.nodeName == 'desc':
+                    pinky_element.attributes['desc'] = get_element_text(xml_child)
+                elif xml_child.nodeName == 'sodipodi:namedview':
+                    if xml_child.hasAttribute('pagecolor'):
+                        pinky_element.attributes['pagecolor'] = xml_child.getAttribute('pagecolor')
+                else:
+                    child = self._parse_element(xml_child)
+                    pinky_element.children.append(child)
+        return pinky_element
+    
+    def _parse_path_element(self, xml_element, pinky_element):
+        if xml_element.getAttribute('sodipodi:type') == 'arc':
+            return self._parse_arc_element(xml_element, pinky_element)
+        path = Path(xml_element.getAttribute('d'))
+        pinky_element.shapes.append(path)
+    
+    def _parse_arc_element(self, xml_element, pinky_element):
+        cx = float(xml_element.getAttribute('sodipodi:cx') or '0')
+        cy = float(xml_element.getAttribute('sodipodi:cy') or '0')
+        rx = float(xml_element.getAttribute('sodipodi:rx'))
+        ry = float(xml_element.getAttribute('sodipodi:ry'))
+        circle = Circle(cx, cy, (rx + ry) / 2.0)
+        pinky_element.shapes.append(circle)
+    
+    def _parse_rect_element(self, xml_element, pinky_element):
+        x = float(xml_element.getAttribute('x') or '0')
+        y = float(xml_element.getAttribute('y') or '0')
+        width = float(xml_element.getAttribute('width'))
+        height = float(xml_element.getAttribute('height'))
+        points = [(x, y), (x + width, y),
+                  (x + width, y + height), (x, y + height)]
+        polygon = Polygon(points)
+        pinky_element.shapes.append(polygon)
 
 class Element(object):
     def __init__(self):
-        self.parent = None
-        self.children = []
         self.matrix = Matrix()
-        self.shapes = []
         self.attributes = {}
+        self.children = []
+        self.shapes = []
 
-    def _flatten(self, attr):
-        value = self.attributes.pop(attr, None)
-        if value is not None:
-            attributes = parse_style(value)
-            self.attributes.update(attributes)
-        for child in self.children:
-            child._flatten(attr)
-
-    def _update_ids(self, document, attr):
-        value = self.attributes.get(attr)
-        if value:
-            document.ids[value] = self
-        for child in self.children:
-            child._update_ids(document, attr)
-
-    def _update_envelope(self, document, parent_matrix):
-        matrix = parent_matrix * self.matrix
+    def get_envelope(self, matrix):
+        envelope = Envelope()
+        matrix = matrix * self.matrix
         for shape in self.shapes:
             transformed_shape = matrix.transform(shape)
-            document.envelope.add(transformed_shape)
+            envelope.add(transformed_shape)
         for child in self.children:
-            child._update_envelope(document, matrix)
+            child_envelope = child.get_envelope(matrix)
+            envelope.add(child_envelope)
+        return envelope
+
+    @property
+    def envelope(self):
+        return self.get_envelope(Matrix())
 
 class Shape(object):
     @property
@@ -207,16 +216,10 @@ class Line(Shape):
         return 0.0
 
     @property
-    def x(self):
-        return 0.5 * (self.x1 + self.x2)
-
-    @property
-    def y(self):
-        return 0.5 * (self.y1 + self.y2)
-
-    @property
     def centroid(self):
-        return self.x, self.y
+        cx = 0.5 * (self.x1 + self.x2)
+        cy = 0.5 * (self.y1 + self.y2)
+        return cx, cy
 
     @property
     def envelope(self):
@@ -271,8 +274,12 @@ class Polygon(Shape):
         return Envelope(min(xs), min(ys), max(xs), max(ys))
 
     def repair(self, epsilon=0.0):
-        if (len(self.points) >= 2 and
-            squared_distance(self.points[0], self.points[-1]) < epsilon ** 2):
+        def eq(p1, p2):
+            x1, y1 = p1
+            x2, y2 = p2
+            squared_distance = (x2 - x1) ** 2 + (y2 - y1) ** 2
+            return squared_distance <= epsilon ** 2
+        if len(self.points) >= 2 and eq(self.points[0], self.points[-1]):
             self.points.pop()
         if self.area < 0.0:
             self.points.reverse()
@@ -530,58 +537,6 @@ def get_element_text(xml_element):
                    if child.nodeType == child.TEXT_NODE)
     text = ' '.join(text.split())
     return text
-
-def parse_element(xml_element, parent):
-    pinky_element = Element()
-    pinky_element.parent = parent
-    pinky_element.matrix = Matrix(xml_element.getAttribute('transform'))
-    if xml_element.hasAttribute('id'):
-        pinky_element.attributes['id'] = xml_element.getAttribute('id')
-    if xml_element.hasAttribute('inkscape:label'):
-        pinky_element.attributes['label'] = xml_element.getAttribute('inkscape:label')
-    if xml_element.hasAttribute('style'):
-        pinky_element.attributes['style'] = xml_element.getAttribute('style')
-    if xml_element.nodeName == 'path':
-        parse_path_element(xml_element, pinky_element)
-    elif xml_element.nodeName == 'rect':
-        parse_rect_element(xml_element, pinky_element)
-    for xml_child in xml_element.childNodes:
-        if xml_child.nodeType == xml_child.ELEMENT_NODE:
-            if xml_child.nodeName == 'title':
-                pinky_element.attributes['title'] = get_element_text(xml_child)
-            elif xml_child.nodeName == 'desc':
-                pinky_element.attributes['desc'] = get_element_text(xml_child)
-            elif xml_child.nodeName == 'sodipodi:namedview':
-                if xml_child.hasAttribute('pagecolor'):
-                    pinky_element.attributes['pagecolor'] = xml_child.getAttribute('pagecolor')
-            else:
-                child = parse_element(xml_child, pinky_element)
-                pinky_element.children.append(child)
-    return pinky_element
-
-def parse_path_element(xml_element, pinky_element):
-    if xml_element.getAttribute('sodipodi:type') == 'arc':
-        return parse_arc_element(xml_element, pinky_element)
-    path = Path(xml_element.getAttribute('d'))
-    pinky_element.shapes.append(path)
-
-def parse_arc_element(xml_element, pinky_element):
-    cx = float(xml_element.getAttribute('sodipodi:cx') or '0')
-    cy = float(xml_element.getAttribute('sodipodi:cy') or '0')
-    rx = float(xml_element.getAttribute('sodipodi:rx'))
-    ry = float(xml_element.getAttribute('sodipodi:ry'))
-    circle = Circle(cx, cy, (rx + ry) / 2.0)
-    pinky_element.shapes.append(circle)
-
-def parse_rect_element(xml_element, pinky_element):
-    x = float(xml_element.getAttribute('x') or '0')
-    y = float(xml_element.getAttribute('y') or '0')
-    width = float(xml_element.getAttribute('width'))
-    height = float(xml_element.getAttribute('height'))
-    points = [(x, y), (x + width, y),
-              (x + width, y + height), (x, y + height)]
-    polygon = Polygon(points)
-    pinky_element.shapes.append(polygon)
 
 def parse_style(style_str):
     lines = (l.strip() for l in style_str.split(';'))
