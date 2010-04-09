@@ -360,6 +360,19 @@ class Rect(Shape):
         self.rx = rx
         self.ry = ry
 
+    def __repr__(self):
+        return ('Rect(x=%r, y=%r, width=%r, height=%r, rx=%r, ry=%r)' %
+                (self.x, self.y, self.width, self.height, self.rx, self.ry))
+
+    @property
+    def centroid(self):
+        return self.x + 0.5 * self.width, self.y + 0.5 * self.height
+
+    @property
+    def envelope(self):
+        return Envelope(self.x, self.y, self.x + self.width,
+                        self.y + self.height)
+
 class Group(Shape):
     def __init__(self, shapes=[]):
         self.shapes = list(shapes)
