@@ -30,9 +30,16 @@ class ParseError(Exception):
 def parse_color(color_str):
     if color_str == 'none':
         return None
+    elif len(color_str) == 4 and color_str[0] == '#':
+        red = int(color_str[1], 16) * 17
+        green = int(color_str[2], 16) * 17
+        blue = int(color_str[3], 16) * 17
+        return red, green, blue
     elif len(color_str) == 7 and color_str[0] == '#':
-        return (int(color_str[1:3], 16), int(color_str[3:5], 16),
-                int(color_str[5:7], 16))
+        red = int(color_str[1:3], 16)
+        green = int(color_str[3:5], 16)
+        blue = int(color_str[5:7], 16)
+        return red, green, blue
     else:
         raise ParseError('invalid color: ' + color_str)
 
