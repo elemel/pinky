@@ -115,7 +115,7 @@ def main():
     document.root.matrix = pinky.Matrix.from_flip_y()
     config = pyglet.gl.Config(double_buffer=True, sample_buffers=1, samples=4,
                               depth_size=8)
-    window = MyWindow(document=document, fullscreen=False, config=config)
+    window = MyWindow(document=document, fullscreen=True, config=config)
     pyglet.app.run()
 
 if __name__ == '__main__':
