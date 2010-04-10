@@ -224,6 +224,10 @@ class Point(Shape):
     def __repr__(self):
         return 'Point(x=%r, y=%r)' % (self.x, self.y)
 
+    def transform(self, matrix):
+        x, y = matrix.transform((self.x, self.y))
+        return Point(x, y)
+
     @property
     def envelope(self):
         return Envelope(self.x, self.y, self.x, self.y)
