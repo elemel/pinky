@@ -36,6 +36,14 @@ def draw_circle(x, y, radius, fill, stroke, vertex_count=32):
         vertices.append(vertex)
     draw_polygon(vertices, fill, stroke)
 
+def draw_rect(x, y, width, height, fill, stroke):
+    vertices = []
+    vertices.append((x, y))
+    vertices.append((x + width, y))
+    vertices.append((x + width, y + height))
+    vertices.append((x, y + height))
+    draw_polygon(vertices, fill, stroke)
+
 class GameEngine(object):
     def __init__(self, document, width, height):
         self.document = document
@@ -47,7 +55,7 @@ class GameEngine(object):
         page_color_str = self.document.root.attributes.get('pagecolor', 'none')
         page_color = pinky.parse_float_color(page_color_str)
         if page_color is None:
-            self.clear_color = 0.0, 0.0, 0.0, 0.0
+            self.clear_color = 1.0, 1.0, 1.0, 1.0
         else:
             page_red, page_green, page_blue = page_color
             self.clear_color = page_red, page_green, page_blue, 1.0
@@ -62,7 +70,7 @@ class GameEngine(object):
     def load_shapes(self, element, matrix):
         attributes = dict(element.attributes)
         attributes.update(pinky.parse_style(attributes.pop('style', '')))
-        attributes.update(pinky.parse_style(attributes.pop('desc', '')))
+        # attributes.update(pinky.parse_style(attributes.pop('desc', '')))
         matrix = matrix * element.matrix
         fill = pinky.parse_float_color(attributes.get('fill', 'none'))
         stroke = pinky.parse_float_color(attributes.get('stroke', 'none'))
@@ -94,6 +102,9 @@ class GameEngine(object):
                 draw_polygon(shape.points, fill, stroke)
             elif isinstance(shape, pinky.Circle):
                 draw_circle(shape.cx, shape.cy, shape.r, fill, stroke)
+            elif isinstance(shape, pinky.Rect):
+                draw_rect(shape.x, shape.y, shape.width, shape.height, fill,
+                          stroke)
         glPopMatrix()
 
 class MyWindow(pyglet.window.Window):
