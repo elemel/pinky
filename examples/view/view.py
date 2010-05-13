@@ -120,7 +120,7 @@ class MyWindow(pyglet.window.Window):
 
 def main():
     if len(sys.argv) != 2:
-        sys.stderr.write('usage: demo <svg>\n')
+        sys.stderr.write('usage: python view.py <svg>\n')
         sys.exit(1)
     document = pinky.Document(sys.argv[1])
     document.root.matrix = pinky.Matrix.from_flip_y()
