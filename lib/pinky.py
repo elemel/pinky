@@ -20,6 +20,14 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+"""SVG loader for rapid game prototyping in Python
+
+Pinky tries to make it easy to use Inkscape as a game editor, without
+getting in your way.
+
+http://github.com/elemel/pinky
+"""
+
 import math
 import re
 from xml.dom import minidom
