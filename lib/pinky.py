@@ -191,7 +191,7 @@ colors = dict(
 )
 
 def parse_color(color_str):
-    """Parse a color into an int RGB tuple in the [0, 255] range."""
+    """Parse a color into an integer RGB tuple in the [0, 255] range."""
     if color_str == 'none':
         return None
     elif color_str.lower() in colors:
@@ -210,7 +210,7 @@ def parse_color(color_str):
         raise ParseError('invalid color: ' + color_str)
 
 def parse_float_color(color_str):
-    """Parse a color into a float RGB tuple in the [0, 1] range."""
+    """Parse a color into a floating-point RGB tuple in the [0, 1] range."""
     color = parse_color(color_str)
     if color is not None:
         red, green, blue = color
