@@ -31,8 +31,11 @@ pinky.Document._parse_path_element	pinky.Document-class.html#_parse_path_element
 pinky.Document._parse_arc_element	pinky.Document-class.html#_parse_arc_element
 pinky.Document.__init__	pinky.Document-class.html#__init__
 pinky.Element	pinky.Element-class.html
-pinky.Element.bounding_box	pinky.Element-class.html#bounding_box
+pinky.Element.matrix	pinky.Element-class.html#matrix
 pinky.Element.get_bounding_box	pinky.Element-class.html#get_bounding_box
+pinky.Element.bounding_box	pinky.Element-class.html#bounding_box
+pinky.Element.attributes	pinky.Element-class.html#attributes
+pinky.Element.children	pinky.Element-class.html#children
 pinky.Element.__init__	pinky.Element-class.html#__init__
 pinky.Group	pinky.Group-class.html
 pinky.Group.area	pinky.Group-class.html#area
@@ -52,6 +55,7 @@ pinky.Line.centroid	pinky.Line-class.html#centroid
 pinky.Line.__repr__	pinky.Line-class.html#__repr__
 pinky.Line.__init__	pinky.Line-class.html#__init__
 pinky.Matrix	pinky.Matrix-class.html
+pinky.Matrix.__repr__	pinky.Matrix-class.html#__repr__
 pinky.Matrix.__str__	pinky.Matrix-class.html#__str__
 pinky.Matrix.from_flip_x	pinky.Matrix-class.html#from_flip_x
 pinky.Matrix.from_flip_y	pinky.Matrix-class.html#from_flip_y
@@ -63,7 +67,6 @@ pinky.Matrix.from_skew_x_deg	pinky.Matrix-class.html#from_skew_x_deg
 pinky.Matrix.from_skew_y_deg	pinky.Matrix-class.html#from_skew_y_deg
 pinky.Matrix.from_scale	pinky.Matrix-class.html#from_scale
 pinky.Matrix.__mul__	pinky.Matrix-class.html#__mul__
-pinky.Matrix.__repr__	pinky.Matrix-class.html#__repr__
 pinky.Matrix._parse	pinky.Matrix-class.html#_parse
 pinky.ParseError	pinky.ParseError-class.html
 pinky.Path	pinky.Path-class.html
