@@ -537,7 +537,7 @@ class Circle(Shape):
         """Get a transformed copy of the circle.
 
         The given transform should only translate, scale, and rotate the
-        circle. The absolute values of the x and y scales should be equal.
+        circle. The absolute values of the x scale and y scale should be equal.
         """
         cx, cy = matrix.transform((self.cx, self.cy))
         px, py = matrix.transform((self.cx + self.r, self.cy))
@@ -554,7 +554,12 @@ class Circle(Shape):
                            self.cx + self.r, self.cy + self.r)
 
 class Rect(Shape):
+    """An axis-aligned rectangle with rounded corners."""
+
     def __init__(self, x, y, width, height, rx, ry):
+        """Initialize a rectangle from the given position, dimensions, and
+        corner radii.
+        """
         self.x = x
         self.y = y
         self.width = width
@@ -576,7 +581,10 @@ class Rect(Shape):
                            self.y + self.height)
 
 class Group(Shape):
+    """A group of shapes."""
+
     def __init__(self, shapes=[]):
+        """Initialize a group from the given shapes."""
         self.shapes = list(shapes)
 
     def __len__(self):
@@ -604,6 +612,8 @@ class Group(Shape):
         return sum(s.area for s in self)
 
 class Path(Shape):
+    """A path."""
+
     _scanner = re.Scanner([
         ('[MmZzLlHhVvCcSsQqTtAa]', (lambda s, t: t)),
         ('[-+0-9.Ee]+', (lambda s, t: float(t))),
