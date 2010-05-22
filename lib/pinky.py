@@ -327,10 +327,12 @@ class Shape(object):
 
     @property
     def area(self):
+        """return the area of the shape"""
         raise NotImplementedError()
 
     @property
     def centroid(self):
+        """return the centroid of the shape"""
         raise NotImplementedError()
 
 class Envelope(Shape):
