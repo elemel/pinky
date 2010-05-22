@@ -93,7 +93,7 @@ object --+
         <span class="summary-sig-arg">y1</span>,
         <span class="summary-sig-arg">x2</span>,
         <span class="summary-sig-arg">y2</span>)</span><br />
-      x.__init__(...) initializes x; see x.__class__.__doc__ for signature</td>
+      Initialize a line from two points.</td>
           <td align="right" valign="top">
             <span class="codelink"><a href="pinky-pysrc.html#Line.__init__">source&nbsp;code</a></span>
             
@@ -126,8 +126,9 @@ object --+
     </td><td class="summary">
       <table width="100%" cellpadding="0" cellspacing="0" border="0">
         <tr>
-          <td><span class="summary-sig"><a name="transform"></a><span class="summary-sig-name">transform</span>(<span class="summary-sig-arg">self</span>,
-        <span class="summary-sig-arg">matrix</span>)</span></td>
+          <td><span class="summary-sig"><a href="pinky.Line-class.html#transform" class="summary-sig-name">transform</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">matrix</span>)</span><br />
+      Get a transformed copy of the shape.</td>
           <td align="right" valign="top">
             <span class="codelink"><a href="pinky-pysrc.html#Line.transform">source&nbsp;code</a></span>
             
@@ -176,14 +177,16 @@ object --+
     <td width="15%" align="right" valign="top" class="summary">
       <span class="summary-type">&nbsp;</span>
     </td><td class="summary">
-        <a href="pinky.Line-class.html#p1" class="summary-name">p1</a>
+        <a href="pinky.Line-class.html#p1" class="summary-name">p1</a><br />
+      The first point.
     </td>
   </tr>
 <tr>
     <td width="15%" align="right" valign="top" class="summary">
       <span class="summary-type">&nbsp;</span>
     </td><td class="summary">
-        <a href="pinky.Line-class.html#p2" class="summary-name">p2</a>
+        <a href="pinky.Line-class.html#p2" class="summary-name">p2</a><br />
+      The second point.
     </td>
   </tr>
 <tr>
@@ -191,7 +194,7 @@ object --+
       <span class="summary-type">&nbsp;</span>
     </td><td class="summary">
         <a href="pinky.Line-class.html#area" class="summary-name">area</a><br />
-      return the area of the shape
+      The area of a line is always zero.
     </td>
   </tr>
 <tr>
@@ -199,7 +202,7 @@ object --+
       <span class="summary-type">&nbsp;</span>
     </td><td class="summary">
         <a href="pinky.Line-class.html#centroid" class="summary-name">centroid</a><br />
-      return the centroid of the shape
+      The center point of the line.
     </td>
   </tr>
 <tr>
@@ -254,12 +257,10 @@ object --+
     </td>
   </tr></table>
   
-  <p>x.__init__(...) initializes x; see x.__class__.__doc__ for 
-  signature</p>
+  <p>Initialize a line from two points.</p>
   <dl class="fields">
     <dt>Overrides:
         object.__init__
-        <dd><em class="note">(inherited documentation)</em></dd>
     </dt>
   </dl>
 </td></tr></table>
@@ -283,6 +284,30 @@ object --+
   <dl class="fields">
     <dt>Overrides:
         object.__repr__
+        <dd><em class="note">(inherited documentation)</em></dd>
+    </dt>
+  </dl>
+</td></tr></table>
+</div>
+<a name="transform"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">transform</span>(<span class="sig-arg">self</span>,
+        <span class="sig-arg">matrix</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="pinky-pysrc.html#Line.transform">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <p>Get a transformed copy of the shape.</p>
+  <dl class="fields">
+    <dt>Overrides:
+        <a href="pinky.Shape-class.html#transform">Shape.transform</a>
         <dd><em class="note">(inherited documentation)</em></dd>
     </dt>
   </dl>
@@ -313,10 +338,11 @@ object --+
        cellspacing="0" width="100%" bgcolor="white">
 <tr><td>
   <h3 class="epydoc">p1</h3>
-  
+  <p>The first point.</p>
   <dl class="fields">
     <dt>Get Method:</dt>
     <dd class="value"><span class="summary-sig"><i>unreachable</i>.p1(<span class="summary-sig-arg">self</span>)</span>
+        - The first point.
     </dd>
   </dl>
 </td></tr></table>
@@ -327,10 +353,11 @@ object --+
        cellspacing="0" width="100%" bgcolor="white">
 <tr><td>
   <h3 class="epydoc">p2</h3>
-  
+  <p>The second point.</p>
   <dl class="fields">
     <dt>Get Method:</dt>
     <dd class="value"><span class="summary-sig"><i>unreachable</i>.p2(<span class="summary-sig-arg">self</span>)</span>
+        - The second point.
     </dd>
   </dl>
 </td></tr></table>
@@ -341,10 +368,11 @@ object --+
        cellspacing="0" width="100%" bgcolor="white">
 <tr><td>
   <h3 class="epydoc">area</h3>
-  <p>return the area of the shape</p>
+  <p>The area of a line is always zero.</p>
   <dl class="fields">
     <dt>Get Method:</dt>
     <dd class="value"><span class="summary-sig"><i>unreachable</i>.area(<span class="summary-sig-arg">self</span>)</span>
+        - The area of a line is always zero.
     </dd>
   </dl>
 </td></tr></table>
@@ -355,10 +383,11 @@ object --+
        cellspacing="0" width="100%" bgcolor="white">
 <tr><td>
   <h3 class="epydoc">centroid</h3>
-  <p>return the centroid of the shape</p>
+  <p>The center point of the line.</p>
   <dl class="fields">
     <dt>Get Method:</dt>
     <dd class="value"><span class="summary-sig"><i>unreachable</i>.centroid(<span class="summary-sig-arg">self</span>)</span>
+        - The center point of the line.
     </dd>
   </dl>
 </td></tr></table>
@@ -404,7 +433,7 @@ object --+
 <table border="0" cellpadding="0" cellspacing="0" width="100%%">
   <tr>
     <td align="left" class="footer">
-    Generated by Epydoc 3.0.1 on Sat May 22 09:50:03 2010
+    Generated by Epydoc 3.0.1 on Sat May 22 10:43:41 2010
     </td>
     <td align="right" class="footer">
       <a target="mainFrame" href="http://epydoc.sourceforge.net"
