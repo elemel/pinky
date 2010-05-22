@@ -322,7 +322,7 @@ class Matrix(object):
 
 class Shape(object):
     @property
-    def envelope(self):
+    def bounding_box(self):
         raise NotImplementedError()
 
     @property
@@ -335,7 +335,8 @@ class Shape(object):
         """return the centroid of the shape"""
         raise NotImplementedError()
 
-class Envelope(Shape):
+class BoundingBox(Shape):
+    """http://www.w3.org/TR/SVG/coords.html#ObjectBoundingBox"""
     def __init__(self, min_x=float('inf'), min_y=float('inf'),
                  max_x=float('-inf'), max_y=float('-inf')):
         self.min_x = min_x
@@ -347,18 +348,18 @@ class Envelope(Shape):
         return self.min_x <= self.max_x and self.min_y <= self.max_y
 
     def __repr__(self):
-        return ('Envelope(min_x=%r, min_y=%r, max_x=%r, max_y=%r)' %
+        return ('BoundingBox(min_x=%r, min_y=%r, max_x=%r, max_y=%r)' %
                 (self.min_x, self.min_y, self.max_x, self.max_y))
 
     def add(self, shape):
-        envelope = shape.envelope
-        self.min_x = min(self.min_x, envelope.min_x)
-        self.min_y = min(self.min_y, envelope.min_y)
-        self.max_x = max(self.max_x, envelope.max_x)
-        self.max_y = max(self.max_y, envelope.max_y)
+        bounding_box = shape.bounding_box
+        self.min_x = min(self.min_x, bounding_box.min_x)
+        self.min_y = min(self.min_y, bounding_box.min_y)
+        self.max_x = max(self.max_x, bounding_box.max_x)
+        self.max_y = max(self.max_y, bounding_box.max_y)
 
     @property
-    def envelope(self):
+    def bounding_box(self):
         return self
 
     @property
@@ -392,8 +393,8 @@ class Point(Shape):
         return Point(x, y)
 
     @property
-    def envelope(self):
-        return Envelope(self.x, self.y, self.x, self.y)
+    def bounding_box(self):
+        return BoundingBox(self.x, self.y, self.x, self.y)
 
     @property
     def area(self):
@@ -436,12 +437,12 @@ class Line(Shape):
         return cx, cy
 
     @property
-    def envelope(self):
+    def bounding_box(self):
         min_x = min(self.x1, self.x2)
         min_y = min(self.y1, self.y2)
         max_x = max(self.x1, self.x2)
         max_y = max(self.y1, self.y2)
-        return Envelope(min_x, min_y, max_x, max_y)
+        return BoundingBox(min_x, min_y, max_x, max_y)
 
 class Polyline(Shape):
     def __init__(self, points):
@@ -458,9 +459,9 @@ class Polyline(Shape):
         return 0.0
 
     @property
-    def envelope(self):
+    def bounding_box(self):
         xs, ys = zip(*self.points)
-        return Envelope(min(xs), min(ys), max(xs), max(ys))
+        return BoundingBox(min(xs), min(ys), max(xs), max(ys))
 
 class Polygon(Shape):
     def __init__(self, points):
@@ -483,9 +484,9 @@ class Polygon(Shape):
         return area / 2.0
 
     @property
-    def envelope(self):
+    def bounding_box(self):
         xs, ys = zip(*self.points)
-        return Envelope(min(xs), min(ys), max(xs), max(ys))
+        return BoundingBox(min(xs), min(ys), max(xs), max(ys))
 
     def repair(self, epsilon=0.0):
         def eq(p1, p2):
@@ -517,9 +518,9 @@ class Circle(Shape):
         return self.cx, self.cy
 
     @property
-    def envelope(self):
-        return Envelope(self.cx - self.r, self.cy - self.r,
-                        self.cx + self.r, self.cy + self.r)
+    def bounding_box(self):
+        return BoundingBox(self.cx - self.r, self.cy - self.r,
+                           self.cx + self.r, self.cy + self.r)
 
 class Rect(Shape):
     def __init__(self, x, y, width, height, rx, ry):
@@ -539,9 +540,9 @@ class Rect(Shape):
         return self.x + 0.5 * self.width, self.y + 0.5 * self.height
 
     @property
-    def envelope(self):
-        return Envelope(self.x, self.y, self.x + self.width,
-                        self.y + self.height)
+    def bounding_box(self):
+        return BoundingBox(self.x, self.y, self.x + self.width,
+                           self.y + self.height)
 
 class Group(Shape):
     def __init__(self, shapes=[]):
@@ -557,11 +558,11 @@ class Group(Shape):
         return Group(s.transform(matrix) for s in self)
 
     @property
-    def envelope(self):
-        envelope = Envelope()
+    def bounding_box(self):
+        bounding_box = BoundingBox()
         for shape in self:
-            envelope.add(shape)
-        return envelope
+            bounding_box.add(shape)
+        return bounding_box
 
     @property
     def area(self):
@@ -766,20 +767,20 @@ class Element(object):
         self.children = []
         self.shapes = []
 
-    def get_envelope(self, matrix):
-        envelope = Envelope()
+    def get_bounding_box(self, matrix):
+        bounding_box = BoundingBox()
         matrix = matrix * self.matrix
         for shape in self.shapes:
             transformed_shape = matrix.transform(shape)
-            envelope.add(transformed_shape)
+            bounding_box.add(transformed_shape)
         for child in self.children:
-            child_envelope = child.get_envelope(matrix)
-            envelope.add(child_envelope)
-        return envelope
+            child_bounding_box = child.get_bounding_box(matrix)
+            bounding_box.add(child_bounding_box)
+        return bounding_box
 
     @property
-    def envelope(self):
-        return self.get_envelope(Matrix())
+    def bounding_box(self):
+        return self.get_bounding_box(Matrix())
 
 class Document(object):
     def __init__(self, file):

@@ -61,10 +61,10 @@ class GameEngine(object):
             self.clear_color = page_red, page_green, page_blue, 1.0
 
     def init_camera(self):
-        envelope = self.document.root.envelope
-        self.camera_x, self.camera_y = envelope.centroid
-        scale_x = float(self.width) / envelope.width
-        scale_y = float(self.height) / envelope.height
+        bounding_box = self.document.root.bounding_box
+        self.camera_x, self.camera_y = bounding_box.centroid
+        scale_x = float(self.width) / bounding_box.width
+        scale_y = float(self.height) / bounding_box.height
         self.camera_scale = 0.8 * min(scale_x, scale_y)
 
     def load_shapes(self, element, matrix):
