@@ -3,7 +3,7 @@
           "DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head>
-  <title>pinky.Envelope</title>
+  <title>pinky.BoundingBox</title>
   <link rel="stylesheet" href="epydoc.css" type="text/css" />
   <script type="text/javascript" src="epydoc.js"></script>
 </head>
@@ -38,7 +38,7 @@
     <td width="100%">
       <span class="breadcrumbs">
         <a href="pinky-module.html">Module&nbsp;pinky</a> ::
-        Class&nbsp;Envelope
+        Class&nbsp;BoundingBox
       </span>
     </td>
     <td>
@@ -48,23 +48,25 @@
     onclick="toggle_private();">hide&nbsp;private</a>]</span></td></tr>
         <tr><td align="right"><span class="options"
             >[<a href="frames.html" target="_top">frames</a
-            >]&nbsp;|&nbsp;<a href="pinky.Envelope-class.html"
+            >]&nbsp;|&nbsp;<a href="pinky.BoundingBox-class.html"
             target="_top">no&nbsp;frames</a>]</span></td></tr>
       </table>
     </td>
   </tr>
 </table>
 <!-- ==================== CLASS DESCRIPTION ==================== -->
-<h1 class="epydoc">Class Envelope</h1><p class="nomargin-top"><span class="codelink"><a href="pinky-pysrc.html#Envelope">source&nbsp;code</a></span></p>
+<h1 class="epydoc">Class BoundingBox</h1><p class="nomargin-top"><span class="codelink"><a href="pinky-pysrc.html#BoundingBox">source&nbsp;code</a></span></p>
 <pre class="base-tree">
 object --+    
          |    
      <a href="pinky.Shape-class.html">Shape</a> --+
              |
-            <strong class="uidshort">Envelope</strong>
+            <strong class="uidshort">BoundingBox</strong>
 </pre>
 
 <hr />
+<p>http://www.w3.org/TR/SVG/coords.html#ObjectBoundingBox</p>
+
 <!-- ==================== INSTANCE METHODS ==================== -->
 <a name="section-InstanceMethods"></a>
 <table class="summary" border="1" cellpadding="3"
@@ -88,14 +90,14 @@ object --+
     </td><td class="summary">
       <table width="100%" cellpadding="0" cellspacing="0" border="0">
         <tr>
-          <td><span class="summary-sig"><a href="pinky.Envelope-class.html#__init__" class="summary-sig-name">__init__</a>(<span class="summary-sig-arg">self</span>,
+          <td><span class="summary-sig"><a href="pinky.BoundingBox-class.html#__init__" class="summary-sig-name">__init__</a>(<span class="summary-sig-arg">self</span>,
         <span class="summary-sig-arg">min_x</span>=<span class="summary-sig-default">inf</span>,
         <span class="summary-sig-arg">min_y</span>=<span class="summary-sig-default">inf</span>,
         <span class="summary-sig-arg">max_x</span>=<span class="summary-sig-default">-inf</span>,
         <span class="summary-sig-arg">max_y</span>=<span class="summary-sig-default">-inf</span>)</span><br />
       x.__init__(...) initializes x; see x.__class__.__doc__ for signature</td>
           <td align="right" valign="top">
-            <span class="codelink"><a href="pinky-pysrc.html#Envelope.__init__">source&nbsp;code</a></span>
+            <span class="codelink"><a href="pinky-pysrc.html#BoundingBox.__init__">source&nbsp;code</a></span>
             
           </td>
         </tr>
@@ -111,7 +113,7 @@ object --+
         <tr>
           <td><span class="summary-sig"><a name="__nonzero__"></a><span class="summary-sig-name">__nonzero__</span>(<span class="summary-sig-arg">self</span>)</span></td>
           <td align="right" valign="top">
-            <span class="codelink"><a href="pinky-pysrc.html#Envelope.__nonzero__">source&nbsp;code</a></span>
+            <span class="codelink"><a href="pinky-pysrc.html#BoundingBox.__nonzero__">source&nbsp;code</a></span>
             
           </td>
         </tr>
@@ -125,10 +127,10 @@ object --+
     </td><td class="summary">
       <table width="100%" cellpadding="0" cellspacing="0" border="0">
         <tr>
-          <td><span class="summary-sig"><a href="pinky.Envelope-class.html#__repr__" class="summary-sig-name">__repr__</a>(<span class="summary-sig-arg">self</span>)</span><br />
+          <td><span class="summary-sig"><a href="pinky.BoundingBox-class.html#__repr__" class="summary-sig-name">__repr__</a>(<span class="summary-sig-arg">self</span>)</span><br />
       repr(x)</td>
           <td align="right" valign="top">
-            <span class="codelink"><a href="pinky-pysrc.html#Envelope.__repr__">source&nbsp;code</a></span>
+            <span class="codelink"><a href="pinky-pysrc.html#BoundingBox.__repr__">source&nbsp;code</a></span>
             
           </td>
         </tr>
@@ -145,7 +147,7 @@ object --+
           <td><span class="summary-sig"><a name="add"></a><span class="summary-sig-name">add</span>(<span class="summary-sig-arg">self</span>,
         <span class="summary-sig-arg">shape</span>)</span></td>
           <td align="right" valign="top">
-            <span class="codelink"><a href="pinky-pysrc.html#Envelope.add">source&nbsp;code</a></span>
+            <span class="codelink"><a href="pinky-pysrc.html#BoundingBox.add">source&nbsp;code</a></span>
             
           </td>
         </tr>
@@ -192,35 +194,37 @@ object --+
     <td width="15%" align="right" valign="top" class="summary">
       <span class="summary-type">&nbsp;</span>
     </td><td class="summary">
-        <a href="pinky.Envelope-class.html#envelope" class="summary-name">envelope</a>
+        <a href="pinky.BoundingBox-class.html#bounding_box" class="summary-name">bounding_box</a>
     </td>
   </tr>
 <tr>
     <td width="15%" align="right" valign="top" class="summary">
       <span class="summary-type">&nbsp;</span>
     </td><td class="summary">
-        <a href="pinky.Envelope-class.html#width" class="summary-name">width</a>
+        <a href="pinky.BoundingBox-class.html#width" class="summary-name">width</a>
     </td>
   </tr>
 <tr>
     <td width="15%" align="right" valign="top" class="summary">
       <span class="summary-type">&nbsp;</span>
     </td><td class="summary">
-        <a href="pinky.Envelope-class.html#height" class="summary-name">height</a>
+        <a href="pinky.BoundingBox-class.html#height" class="summary-name">height</a>
     </td>
   </tr>
 <tr>
     <td width="15%" align="right" valign="top" class="summary">
       <span class="summary-type">&nbsp;</span>
     </td><td class="summary">
-        <a href="pinky.Envelope-class.html#area" class="summary-name">area</a>
+        <a href="pinky.BoundingBox-class.html#area" class="summary-name">area</a><br />
+      return the area of the shape
     </td>
   </tr>
 <tr>
     <td width="15%" align="right" valign="top" class="summary">
       <span class="summary-type">&nbsp;</span>
     </td><td class="summary">
-        <a href="pinky.Envelope-class.html#centroid" class="summary-name">centroid</a>
+        <a href="pinky.BoundingBox-class.html#centroid" class="summary-name">centroid</a><br />
+      return the centroid of the shape
     </td>
   </tr>
   <tr>
@@ -264,7 +268,7 @@ object --+
     <br /><em class="fname">(Constructor)</em>
   </h3>
   </td><td align="right" valign="top"
-    ><span class="codelink"><a href="pinky-pysrc.html#Envelope.__init__">source&nbsp;code</a></span>&nbsp;
+    ><span class="codelink"><a href="pinky-pysrc.html#BoundingBox.__init__">source&nbsp;code</a></span>&nbsp;
     </td>
   </tr></table>
   
@@ -289,7 +293,7 @@ object --+
     <br /><em class="fname">(Representation operator)</em>
   </h3>
   </td><td align="right" valign="top"
-    ><span class="codelink"><a href="pinky-pysrc.html#Envelope.__repr__">source&nbsp;code</a></span>&nbsp;
+    ><span class="codelink"><a href="pinky-pysrc.html#BoundingBox.__repr__">source&nbsp;code</a></span>&nbsp;
     </td>
   </tr></table>
   
@@ -321,16 +325,16 @@ object --+
   </td>
 </tr>
 </table>
-<a name="envelope"></a>
+<a name="bounding_box"></a>
 <div>
 <table class="details" border="1" cellpadding="3"
        cellspacing="0" width="100%" bgcolor="white">
 <tr><td>
-  <h3 class="epydoc">envelope</h3>
+  <h3 class="epydoc">bounding_box</h3>
   
   <dl class="fields">
     <dt>Get Method:</dt>
-    <dd class="value"><span class="summary-sig"><i>unreachable</i>.envelope(<span class="summary-sig-arg">self</span>)</span>
+    <dd class="value"><span class="summary-sig"><i>unreachable</i>.bounding_box(<span class="summary-sig-arg">self</span>)</span>
     </dd>
   </dl>
 </td></tr></table>
@@ -369,7 +373,7 @@ object --+
        cellspacing="0" width="100%" bgcolor="white">
 <tr><td>
   <h3 class="epydoc">area</h3>
-  
+  <p>return the area of the shape</p>
   <dl class="fields">
     <dt>Get Method:</dt>
     <dd class="value"><span class="summary-sig"><i>unreachable</i>.area(<span class="summary-sig-arg">self</span>)</span>
@@ -383,7 +387,7 @@ object --+
        cellspacing="0" width="100%" bgcolor="white">
 <tr><td>
   <h3 class="epydoc">centroid</h3>
-  
+  <p>return the centroid of the shape</p>
   <dl class="fields">
     <dt>Get Method:</dt>
     <dd class="value"><span class="summary-sig"><i>unreachable</i>.centroid(<span class="summary-sig-arg">self</span>)</span>
@@ -418,7 +422,7 @@ object --+
 <table border="0" cellpadding="0" cellspacing="0" width="100%%">
   <tr>
     <td align="left" class="footer">
-    Generated by Epydoc 3.0.1 on Sun May 16 21:21:26 2010
+    Generated by Epydoc 3.0.1 on Sat May 22 09:50:03 2010
     </td>
     <td align="right" class="footer">
       <a target="mainFrame" href="http://epydoc.sourceforge.net"
