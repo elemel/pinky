@@ -25,7 +25,7 @@
 Pinky tries to make it easy to use Inkscape as a game editor, without
 getting in your way.
 
-http://github.com/elemel/pinky
+See: http://github.com/elemel/pinky
 """
 
 import math
@@ -33,9 +33,13 @@ import re
 from xml.dom import minidom
 
 class ParseError(Exception):
+    """A parse error."""
     pass
 
-# http://www.w3.org/TR/SVG/types.html#ColorKeywords
+"""Lowercase SVG color keywords.
+
+See: http://www.w3.org/TR/SVG/types.html#ColorKeywords
+"""
 colors = dict(
     aliceblue=(240, 248, 255),
     antiquewhite=(250, 235, 215),
@@ -187,6 +191,7 @@ colors = dict(
 )
 
 def parse_color(color_str):
+    """Parse a color into an int RGB tuple in the [0, 255] range."""
     if color_str == 'none':
         return None
     elif color_str.lower() in colors:
@@ -205,6 +210,7 @@ def parse_color(color_str):
         raise ParseError('invalid color: ' + color_str)
 
 def parse_float_color(color_str):
+    """Parse a color into a float RGB tuple in the [0, 1] range."""
     color = parse_color(color_str)
     if color is not None:
         red, green, blue = color
@@ -212,11 +218,14 @@ def parse_float_color(color_str):
     return color
 
 def parse_style(style_str):
+    """Parse a CSS attribute list into a dictionary."""
     lines = (l.strip() for l in style_str.split(';'))
     pairs = (l.split(':') for l in lines if l)
     return dict((k.strip(), v.strip()) for k, v in pairs)
 
 class Matrix(object):
+    """A transformation matrix."""
+
     def __init__(self, *args):
         if not args:
             self.abcdef = 1.0, 0.0, 0.0, 1.0, 0.0, 0.0
@@ -258,6 +267,7 @@ class Matrix(object):
         return 'Matrix(%r, %r, %r, %r, %r, %r)' % self.abcdef
 
     def __mul__(self, other):
+        """Multiply with another transformation matrix."""
         if isinstance(other, Matrix):
             a1, b1, c1, d1, e1, f1 = self.abcdef
             a2, b2, c2, d2, e2, f2 = other.abcdef
@@ -272,6 +282,7 @@ class Matrix(object):
             return NotImplemented
 
     def transform(self, shape):
+        """Get a transformed copy of a point tuple or shape."""
         if isinstance(shape, tuple):
             a, b, c, d, e, f = self.abcdef
             x, y = shape
@@ -314,15 +325,20 @@ class Matrix(object):
 
     @classmethod
     def from_flip_x(cls):
+        """Create a horizontal flip transformation matrix."""
         return cls(-1.0, 0.0, 0.0, 1.0, 0.0, 0.0)
 
     @classmethod
     def from_flip_y(cls):
+        """Create a vertical flip transformation matrix."""
         return cls(1.0, 0.0, 0.0, -1.0, 0.0, 0.0)
 
 class Shape(object):
+    """A shape."""
+
     @property
     def bounding_box(self):
+        """The bounding box of the shape."""
         raise NotImplementedError()
 
     @property
@@ -348,6 +364,7 @@ class BoundingBox(Shape):
 
     def __init__(self, min_x=float('inf'), min_y=float('inf'),
                  max_x=float('-inf'), max_y=float('-inf')):
+        """Initialize a bounding box from the given minima and maxima."""
         self.min_x = min_x
         self.min_y = min_y
         self.max_x = max_x
@@ -422,6 +439,8 @@ class Point(Shape):
         return self.x, self.y
 
 class Line(Shape):
+    """A line."""
+
     def __init__(self, x1, y1, x2, y2):
         """Initialize a line from two points."""
         self.x1, self.y1 = x1, y1
@@ -467,6 +486,8 @@ class Line(Shape):
         return BoundingBox(min_x, min_y, max_x, max_y)
 
 class Polyline(Shape):
+    """A line strip."""
+
     def __init__(self, points):
         self.points = list(points)
 
@@ -486,6 +507,8 @@ class Polyline(Shape):
         return BoundingBox(min(xs), min(ys), max(xs), max(ys))
 
 class Polygon(Shape):
+    """A polygon."""
+
     def __init__(self, points):
         self.points = list(points)
 
@@ -525,6 +548,8 @@ class Polygon(Shape):
             self.points.reverse()
 
 class Circle(Shape):
+    """A circle."""
+
     def __init__(self, cx, cy, r):
         """Initialize a circle from the given center point and radius."""
         self.cx, self.cy = cx, cy
@@ -766,6 +791,7 @@ class Path(Shape):
 
     @property
     def subpaths(self):
+        """Iterate over the subpaths of the path."""
         commands = []
         for command in self.commands:
             if commands and command[0] in 'Mm':
@@ -775,7 +801,10 @@ class Path(Shape):
         if commands:
             yield Path(commands)
 
+    # TODO: Return a shape instead. Return a group if and only if there are
+    # multiple subpaths.
     def linearize(self):
+        """Convert the path into a list of shapes, one for each subpath."""
         for path in self.subpaths:
             points = []
             closed = False
@@ -796,6 +825,7 @@ class Path(Shape):
                     yield Polyline(points)
 
     def __str__(self):
+        """Format the path as an SVG path string."""
         return ' '.join(self._format_command(c) for c in self.commands)
 
     @classmethod
@@ -806,13 +836,25 @@ class Path(Shape):
         return ' '.join(parts)
 
 class Element(object):
+    """An element."""
+
     def __init__(self):
+        """Initialize an element."""
+
+        """The local transformation matrix of the element."""
         self.matrix = Matrix()
+
+        """The direct attributes of the element."""
         self.attributes = {}
+
+        """The children of the element in the element tree."""
         self.children = []
+
+        """The shapes immediately attached to the element."""
         self.shapes = []
 
     def get_bounding_box(self, matrix):
+        """The bounding box of the transformed element."""
         bounding_box = BoundingBox()
         matrix = matrix * self.matrix
         for shape in self.shapes:
@@ -825,10 +867,14 @@ class Element(object):
 
     @property
     def bounding_box(self):
+        """The bounding box of the element."""
         return self.get_bounding_box(Matrix())
 
 class Document(object):
+    """A document."""
+
     def __init__(self, file):
+        """Initialize a document from the given SVG file."""
         xml_document = minidom.parse(file)
         xml_element = xml_document.getElementsByTagName('svg')[0]
         self.elements = {}
