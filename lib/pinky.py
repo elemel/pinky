@@ -327,16 +327,25 @@ class Shape(object):
 
     @property
     def area(self):
-        """return the area of the shape"""
+        """The area of the shape."""
         raise NotImplementedError()
 
     @property
     def centroid(self):
-        """return the centroid of the shape"""
+        """The mass center of the shape."""
         raise NotImplementedError()
 
+    def transform(self, matrix):
+        """Get a transformed copy of the shape."""
+        x, y = matrix.transform((self.x, self.y))
+        return Point(x, y)
+
 class BoundingBox(Shape):
-    """http://www.w3.org/TR/SVG/coords.html#ObjectBoundingBox"""
+    """An axis-aligned rectangle for representing shape boundaries.
+
+    See: http://www.w3.org/TR/SVG/coords.html#ObjectBoundingBox
+    """
+
     def __init__(self, min_x=float('inf'), min_y=float('inf'),
                  max_x=float('-inf'), max_y=float('-inf')):
         self.min_x = min_x
@@ -345,6 +354,7 @@ class BoundingBox(Shape):
         self.max_y = max_y
 
     def __nonzero__(self):
+        """Is the bounding box empty?"""
         return self.min_x <= self.max_x and self.min_y <= self.max_y
 
     def __repr__(self):
@@ -360,14 +370,17 @@ class BoundingBox(Shape):
 
     @property
     def bounding_box(self):
+        """The bounding box itself."""
         return self
 
     @property
     def width(self):
+        """The width of the bounding box."""
         return self.max_x - self.min_x
 
     @property
     def height(self):
+        """The height of the bounding box."""
         return self.max_y - self.min_y
 
     @property
@@ -381,6 +394,8 @@ class BoundingBox(Shape):
         return cx, cy
 
 class Point(Shape):
+    """A point."""
+
     def __init__(self, x, y):
         self.x = x
         self.y = y
@@ -398,14 +413,17 @@ class Point(Shape):
 
     @property
     def area(self):
+        """The area of a point is always zero."""
         return 0.0
 
     @property
     def centroid(self):
+        """The point itself."""
         return self.x, self.y
 
 class Line(Shape):
     def __init__(self, x1, y1, x2, y2):
+        """Initialize a line from two points."""
         self.x1, self.y1 = x1, y1
         self.x2, self.y2 = x2, y2
 
@@ -420,18 +438,22 @@ class Line(Shape):
 
     @property
     def p1(self):
+        """The first point."""
         return self.x1, self.y1
 
     @property
     def p2(self):
+        """The second point."""
         return self.x2, self.y2
 
     @property
     def area(self):
+        """The area of a line is always zero."""
         return 0.0
 
     @property
     def centroid(self):
+        """The center point of the line."""
         cx = 0.5 * (self.x1 + self.x2)
         cy = 0.5 * (self.y1 + self.y2)
         return cx, cy
@@ -475,7 +497,10 @@ class Polygon(Shape):
 
     @property
     def area(self):
-        # http://mathworld.wolfram.com/PolygonArea.html
+        """The area of the polygon.
+
+        See: http://mathworld.wolfram.com/PolygonArea.html
+        """
         area = 0.0
         for i in xrange(len(self.points)):
             x1, y1 = self.points[i]
@@ -501,6 +526,7 @@ class Polygon(Shape):
 
 class Circle(Shape):
     def __init__(self, cx, cy, r):
+        """Initialize a circle from the given center point and radius."""
         self.cx, self.cy = cx, cy
         self.r = r
 
@@ -508,6 +534,11 @@ class Circle(Shape):
         return 'Circle(cx=%r, cy=%r, r=%r)' % (self.cx, self.cy, self.r)
 
     def transform(self, matrix):
+        """Get a transformed copy of the circle.
+
+        The given transform should only translate, scale, and rotate the
+        circle. The absolute values of the x and y scales should be equal.
+        """
         cx, cy = matrix.transform((self.cx, self.cy))
         px, py = matrix.transform((self.cx + self.r, self.cy))
         r = math.sqrt((px - cx) ** 2 + (py - cy) ** 2)
@@ -549,9 +580,11 @@ class Group(Shape):
         self.shapes = list(shapes)
 
     def __len__(self):
+        """The number of shapes in the group."""
         return len(self.shapes)
 
     def __iter__(self):
+        """Iterate over the shapes in the group."""
         return iter(self.shapes)
 
     def transform(self, matrix):
@@ -559,6 +592,7 @@ class Group(Shape):
 
     @property
     def bounding_box(self):
+        """The bounding box containing all of the shapes in the group."""
         bounding_box = BoundingBox()
         for shape in self:
             bounding_box.add(shape)
@@ -566,6 +600,7 @@ class Group(Shape):
 
     @property
     def area(self):
+        """The sum of the area of each shape in the group."""
         return sum(s.area for s in self)
 
 class Path(Shape):
