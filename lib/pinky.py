@@ -402,7 +402,7 @@ class BoundingBox(Shape):
         self.max_y = max_y
 
     def __nonzero__(self):
-        """Is the bounding box empty?"""
+        """Is the bounding box non-empty?"""
         return self.min_x <= self.max_x and self.min_y <= self.max_y
 
     def __repr__(self):
@@ -410,11 +410,17 @@ class BoundingBox(Shape):
                 (self.min_x, self.min_y, self.max_x, self.max_y))
 
     def add(self, shape):
+        """Expand the bounding box to contain the given shape."""
         bounding_box = shape.bounding_box
         self.min_x = min(self.min_x, bounding_box.min_x)
         self.min_y = min(self.min_y, bounding_box.min_y)
         self.max_x = max(self.max_x, bounding_box.max_x)
         self.max_y = max(self.max_y, bounding_box.max_y)
+
+    def intersects(self, other):
+        """Do the two bounding boxes intersect?"""
+        return (self.min_x < other.max_x and other.min_x < self.max_x and
+                self.min_y < other.max_y and other.min_y < self.max_y)
 
     @property
     def bounding_box(self):
@@ -885,7 +891,7 @@ class Element(object):
         self.shapes = []
 
     def get_bounding_box(self, matrix):
-        """The bounding box of the transformed element."""
+        """Get the bounding box of the transformed element."""
         bounding_box = BoundingBox()
         matrix = matrix * self.matrix
         for shape in self.shapes:
