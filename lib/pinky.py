@@ -241,30 +241,13 @@ def parse_style(style_str):
 class Matrix(object):
     """A transformation matrix."""
 
-    def __init__(self, *args):
-        """Initialize a matrix from the given arguments.
-
-        Matrix():
-          Initialize an identity matrix.
-
-        Matrix(a, b, c, d, e, f):
-          Initialize a matrix from the given components.
-
-        Matrix(transform_list_str):
-          Parse a matrix from a transform list string.
-        """
-        if not args:
-            self.abcdef = 1.0, 0.0, 0.0, 1.0, 0.0, 0.0
-        elif len(args) == 6:
-            self.abcdef = args
-        elif len(args) == 1 and isinstance(args[0], basestring):
-            matrix = self._parse(args[0])
-            self.abcdef = matrix.abcdef
-        else:
-            raise ValueError('invalid arguments for matrix initializer')
+    def __init__(self, a=1.0, b=0.0, c=0.0, d=1.0, e=0.0, f=0.0):
+        """Initialize a matrix from the given components."""
+        assert all(isinstance(x, float) for x in (a, b, c, d, e, f))
+        self.abcdef = a, b, c, d, e, f
 
     @classmethod
-    def _parse(cls, transform_list_str):
+    def parse(cls, transform_list_str):
         matrix = Matrix()
         for transform_str in transform_list_str.replace(',', ' ').split(')')[:-1]:
             name, args = transform_str.strip().split('(')
@@ -1036,7 +1019,7 @@ class Document(object):
 
     def _parse_element(self, xml_element):
         pinky_element = Element()
-        pinky_element.matrix = Matrix(xml_element.getAttribute('transform'))
+        pinky_element.matrix = Matrix.parse(xml_element.getAttribute('transform'))
         if xml_element.hasAttribute('id'):
             id = xml_element.getAttribute('id')
             self.elements[id] = pinky_element
