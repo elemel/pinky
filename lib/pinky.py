@@ -632,29 +632,21 @@ class Group(Shape):
         """Initialize a group from the given shapes."""
         self.shapes = list(shapes)
 
-    def __len__(self):
-        """The number of shapes in the group."""
-        return len(self.shapes)
-
-    def __iter__(self):
-        """Iterate over the shapes in the group."""
-        return iter(self.shapes)
-
     def transform(self, matrix):
-        return Group(s.transform(matrix) for s in self)
+        return Group(s.transform(matrix) for s in self.shapes)
 
     @property
     def bounding_box(self):
         """The bounding box containing all of the shapes in the group."""
         bounding_box = BoundingBox()
-        for shape in self:
+        for shape in self.shapes:
             bounding_box.add(shape)
         return bounding_box
 
     @property
     def area(self):
         """The sum of the area of each shape in the group."""
-        return sum(s.area for s in self)
+        return sum(s.area for s in self.shapes)
 
 class Command(object):
     pass
@@ -788,7 +780,7 @@ class Path(Shape):
         assert all(isinstance(c, Command) for c in self.commands)
 
     def transform(self, matrix):
-        return Group(self.linearize()).transform(matrix)
+        return self.linearize().transform(matrix)
 
     @classmethod
     def parse(cls, path_str):
@@ -944,10 +936,9 @@ class Path(Shape):
         if commands:
             yield Path(commands)
 
-    # TODO: Return a shape instead. Return a group if and only if there are
-    # multiple subpaths.
     def linearize(self):
         """Convert the path into a list of shapes, one for each subpath."""
+        shapes = []
         for path in self.subpaths:
             points = []
             closed = False
@@ -958,15 +949,20 @@ class Path(Shape):
                     point = command.x, command.y
                     points.append(point)
             if closed:
-                yield Polygon(points)
+                shape = Polygon(points)
             else:
                 if len(points) == 2:
                     p1, p2 = points
                     x1, y1 = p1
                     x2, y2 = p2
-                    yield Line(x1, y1, x2, y2)
+                    shape = Line(x1, y1, x2, y2)
                 else:
-                    yield Polyline(points)
+                    shape = Polyline(points)
+            shapes.append(shape)
+        if len(shapes) == 1:
+            return shapes[0]
+        else:
+            return Group(shapes)
 
     def __str__(self):
         """Format the path as an SVG path string."""

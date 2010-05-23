@@ -81,12 +81,13 @@ class GameEngine(object):
 
     def add_shape(self, shape, matrix, fill, stroke):
         if isinstance(shape, pinky.Path):
-            shapes = shape.linearize()
+            shape = shape.linearize()
+        if isinstance(shape, pinky.Group):
+            for child in shape.shapes:
+                self.add_shape(child, matrix, fill, stroke)
         else:
-            shapes = [shape]
-        for shape in shapes:
-            transformed_shape = matrix.transform(shape)
-            self.shapes.append((transformed_shape, fill, stroke))
+            shape_entry = shape.transform(matrix), fill, stroke
+            self.shapes.append(shape_entry)
 
     def on_draw(self):
         glClearColor(*self.clear_color)
