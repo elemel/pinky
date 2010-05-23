@@ -937,7 +937,7 @@ class Path(Shape):
             yield Path(commands)
 
     def linearize(self):
-        """Convert the path into a list of shapes, one for each subpath."""
+        """Linearize the path."""
         shapes = []
         for path in self.subpaths:
             points = []
