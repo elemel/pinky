@@ -673,21 +673,117 @@ class Group(Shape):
         """The sum of the area of each shape in the group."""
         return sum(s.area for s in self)
 
-# TODO: Create classes for the path commands. Don't support any relative
-# commands. Don't support the horizontal and vertical lineto commands. Don't
-# support the shorthand/smooth commands? Command classes:
-#
-# - Command (base class)
-# - MCommand or Moveto
-# - ZCommand or Closepath
-# - LCommand or Lineto
-# - (HCommand or HorizontalLineto)
-# - (VCommand or VerticalLineto)
-# - CCommand or Curveto
-# - (SCommand or SmoothCurveto)
-# - QCommand or QuadraticBezierCurveto
-# - (TCommand or SmoothQuadraticBezierCurveto)
-# - ACommand or EllipticalArc
+class Command(object):
+    pass
+
+class Moveto(Command):
+    def __init__(self, x, y):
+        self.x = x
+        self.y = y
+
+    def __str__(self):
+        return 'M %g %g' % (self.x, self.y)
+
+    def __repr__(self):
+        return 'Moveto(x=%r, y=%r)' % (self.x, self.y)
+
+class Closepath(Command):
+    def __init__(self):
+        pass
+
+    def __str__(self):
+        return 'Z'
+
+    def __repr__(self):
+        return 'Closepath()'
+
+class Lineto(Command):
+    def __init__(self, x, y):
+        self.x = x
+        self.y = y
+
+    def __str__(self):
+        return 'L %g %g' % (self.x, self.y)
+
+    def __repr__(self):
+        return 'Lineto(x=%r, y=%r)' % (self.x, self.y)
+
+class Curveto(Command):
+    def __init__(self, x1, y1, x2, y2, x, y):
+        self.x1 = x1
+        self.y1 = y1
+        self.x2 = x2
+        self.y2 = y2
+        self.x = x
+        self.y = y
+
+    def __str__(self):
+        return ('C %g %g %g %g %g %g' %
+                (self.x1, self.y1, self.x2, self.y2, self.x, self.y))
+
+    def __repr__(self):
+        return ('Curveto(x1=%r, y1=%r, x2=%r, y2=%r, x=%r, y=%r)' %
+                (self.x1, self.y1, self.x2, self.y2, self.x, self.y))
+
+class SmoothCurveto(Command):
+    def __init__(self, x2, y2, x, y):
+        self.x2 = x2
+        self.y2 = y2
+        self.x = x
+        self.y = y
+
+    def __str__(self):
+        return 'S %g %g %g %g' % (self.x2, self.y2, self.x, self.y)
+
+    def __repr__(self):
+        return ('SmoothCurveto(x2=%r, y2=%r, x=%r, y=%r)' %
+                (self.x2, self.y2, self.x, self.y))
+
+class QuadraticBezierCurveto(Command):
+    def __init__(self, x1, y1, x, y):
+        self.x1 = x1
+        self.y1 = y1
+        self.x = x
+        self.y = y
+
+    def __str__(self):
+        return 'Q %g %g %g %g' % (self.x1, self.y1, self.x, self.y)
+
+    def __repr__(self):
+        return ('QuadraticBezierCurveto(x1=%r, y1=%r, x=%r, y=%r)' %
+                (self.x1, self.y1, self.x, self.y))
+
+class SmoothQuadraticBezierCurveto(Command):
+    def __init__(self, x, y):
+        self.x = x
+        self.y = y
+
+    def __str__(self):
+        return 'T %g %g' % (self.x, self.y)
+
+    def __repr__(self):
+        return 'SmoothQuadraticBezierCurveto(x=%r, y=%r)' % (self.x, self.y)
+
+class EllipticalArc(Command):
+    def __init__(self, rx, ry, rotation, large, sweep, x, y):
+        self.rx = rx
+        self.ry = ry
+        self.rotation = rotation
+        self.large = large
+        self.sweep = sweep
+        self.x = x
+        self.y = y
+
+    def __str__(self):
+        return ('A %g %g %g %i %i %g %g' %
+                (self.rx, self.ry, self.rotation,
+                 self.large, self.sweep, self.x, self.y))
+
+    def __repr__(self):
+        return ('EllipticalArc(rx=%r, ry=%r, rotation=%r, large=%r, sweep=%r, x=%r, y=%r)' %
+                (self.rx, self.ry, self.rotation, self.large, self.sweep,
+                 self.x, self.y))
+
 class Path(Shape):
     """A path."""
 
@@ -699,18 +795,30 @@ class Path(Shape):
 
     _arg_counts = dict(M=2, Z=0, L=2, H=1, V=1, C=6, S=4, Q=4, T=2, A=7,
                        m=2, z=0, l=2, h=1, v=1, c=6, s=4, q=4, t=2, a=7)
+ 
+    _command_classes = dict(M=Moveto, Z=Closepath, L=Lineto, C=Curveto,
+                            S=SmoothCurveto, Q=QuadraticBezierCurveto,
+                            T=SmoothQuadraticBezierCurveto, A=EllipticalArc)
 
-    def __init__(self, arg):
-        if isinstance(arg, basestring):
-            commands = self._parse_commands(arg)
-            commands = self._split_polycommands(commands)
-            commands = self._to_absolute_commands(commands)
-            self.commands = list(commands)
-        else:
-            self.commands = list(arg)
+    def __init__(self, commands):
+        self.commands = list(commands)
+        assert all(isinstance(c, Command) for c in self.commands)
 
     def transform(self, matrix):
         return Group(self.linearize()).transform(matrix)
+
+    @classmethod
+    def parse(cls, path_str):
+        command_tuples = cls._parse_commands(path_str)
+        command_tuples = cls._split_polycommands(command_tuples)
+        command_tuples = cls._to_absolute_commands(command_tuples)
+        commands = []
+        for command_tuple in command_tuples:
+            name, args = command_tuple[0], command_tuple[1:]
+            command_class = cls._command_classes[name]
+            command = command_class(*args)
+            commands.append(command)
+        return Path(commands)
 
     @classmethod
     def _parse_commands(cls, path_str):
@@ -846,7 +954,7 @@ class Path(Shape):
         """Iterate over the subpaths of the path."""
         commands = []
         for command in self.commands:
-            if commands and command[0] in 'Mm':
+            if commands and isinstance(command, Moveto):
                 yield Path(commands)
                 del commands[:]
             commands.append(command)
@@ -861,10 +969,11 @@ class Path(Shape):
             points = []
             closed = False
             for command in path.commands:
-                if command[0] == 'Z':
+                if isinstance(command, Closepath):
                     closed = True
                 else:
-                    points.append(command[-2:])
+                    point = command.x, command.y
+                    points.append(point)
             if closed:
                 yield Polygon(points)
             else:
@@ -878,14 +987,7 @@ class Path(Shape):
 
     def __str__(self):
         """Format the path as an SVG path string."""
-        return ' '.join(self._format_command(c) for c in self.commands)
-
-    @classmethod
-    def _format_command(cls, command):
-        name, args = command[0], command[1:]
-        parts = [name]
-        parts.extend('%g' % arg for arg in args)
-        return ' '.join(parts)
+        return ' '.join(str(c) for c in self.commands)
 
 class Element(object):
     """An element."""
@@ -970,7 +1072,7 @@ class Document(object):
     def _parse_path_element(self, xml_element, pinky_element):
         if xml_element.getAttribute('sodipodi:type') == 'arc':
             return self._parse_arc_element(xml_element, pinky_element)
-        path = Path(xml_element.getAttribute('d'))
+        path = Path.parse(xml_element.getAttribute('d'))
         pinky_element.shapes.append(path)
     
     def _parse_arc_element(self, xml_element, pinky_element):
