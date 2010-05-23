@@ -673,6 +673,21 @@ class Group(Shape):
         """The sum of the area of each shape in the group."""
         return sum(s.area for s in self)
 
+# TODO: Create classes for the path commands. Don't support any relative
+# commands. Don't support the horizontal and vertical lineto commands. Don't
+# support the shorthand/smooth commands? Command classes:
+#
+# - Command (base class)
+# - MCommand or Moveto
+# - ZCommand or Closepath
+# - LCommand or Lineto
+# - (HCommand or HorizontalLineto)
+# - (VCommand or VerticalLineto)
+# - CCommand or Curveto
+# - (SCommand or SmoothCurveto)
+# - QCommand or QuadraticBezierCurveto
+# - (TCommand or SmoothQuadraticBezierCurveto)
+# - ACommand or EllipticalArc
 class Path(Shape):
     """A path."""
 
