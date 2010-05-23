@@ -7,7 +7,7 @@ import sys
 
 def draw_line(x1, y1, x2, y2, stroke):
     if stroke is not None:
-        glColor3f(*stroke)
+        glColor3ub(*stroke)
         glBegin(GL_LINES)
         glVertex2f(x1, y1)
         glVertex2f(x2, y2)
@@ -15,13 +15,13 @@ def draw_line(x1, y1, x2, y2, stroke):
 
 def draw_polygon(vertices, fill, stroke):
     if fill is not None:
-        glColor3f(*fill)
+        glColor3ub(*fill)
         glBegin(GL_POLYGON)
         for x, y in vertices:
             glVertex2f(x, y)
         glEnd()
     if stroke is not None:
-        glColor3f(*stroke)
+        glColor3ub(*stroke)
         glBegin(GL_LINE_LOOP)
         for x, y in vertices:
             glVertex2f(x, y)
@@ -53,11 +53,11 @@ class GameEngine(object):
         self.load_shapes(self.document.root, pinky.Matrix())
         self.init_camera()
         page_color_str = self.document.root.attributes.get('pagecolor', 'none')
-        page_color = pinky.parse_float_color(page_color_str)
+        page_color = pinky.Color.parse(page_color_str)
         if page_color is None:
             self.clear_color = 1.0, 1.0, 1.0, 1.0
         else:
-            page_red, page_green, page_blue = page_color
+            page_red, page_green, page_blue = page_color.float_components
             self.clear_color = page_red, page_green, page_blue, 1.0
 
     def init_camera(self):
@@ -72,8 +72,8 @@ class GameEngine(object):
         attributes.update(pinky.parse_style(attributes.pop('style', '')))
         # attributes.update(pinky.parse_style(attributes.pop('desc', '')))
         matrix = matrix * element.matrix
-        fill = pinky.parse_float_color(attributes.get('fill', 'none'))
-        stroke = pinky.parse_float_color(attributes.get('stroke', 'none'))
+        fill = pinky.Color.parse(attributes.get('fill', 'none'))
+        stroke = pinky.Color.parse(attributes.get('stroke', 'none'))
         for shape in element.shapes:
             self.add_shape(shape, matrix, fill, stroke)
         for child in element.children:
