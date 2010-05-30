@@ -348,7 +348,7 @@ class Matrix(object):
         return cls(1.0, 0.0, 0.0, -1.0, 0.0, 0.0)
 
 class Shape(object):
-    """A shape."""
+    """The base class for shapes."""
 
     @property
     def bounding_box(self):
@@ -649,9 +649,12 @@ class Group(Shape):
         return sum(s.area for s in self.shapes)
 
 class Command(object):
+    """The base class for path commands."""
     pass
 
 class Moveto(Command):
+    """A moveto command."""
+
     def __init__(self, x, y):
         self.x = x
         self.y = y
@@ -663,6 +666,8 @@ class Moveto(Command):
         return 'Moveto(x=%r, y=%r)' % (self.x, self.y)
 
 class Closepath(Command):
+    """A closepath command."""
+
     def __init__(self):
         pass
 
@@ -673,6 +678,8 @@ class Closepath(Command):
         return 'Closepath()'
 
 class Lineto(Command):
+    """A lineto command."""
+
     def __init__(self, x, y):
         self.x = x
         self.y = y
@@ -684,6 +691,8 @@ class Lineto(Command):
         return 'Lineto(x=%r, y=%r)' % (self.x, self.y)
 
 class Curveto(Command):
+    """A curveto command."""
+
     def __init__(self, x1, y1, x2, y2, x, y):
         self.x1 = x1
         self.y1 = y1
@@ -701,6 +710,8 @@ class Curveto(Command):
                 (self.x1, self.y1, self.x2, self.y2, self.x, self.y))
 
 class SmoothCurveto(Command):
+    """A smooth curveto command."""
+
     def __init__(self, x2, y2, x, y):
         self.x2 = x2
         self.y2 = y2
@@ -715,6 +726,7 @@ class SmoothCurveto(Command):
                 (self.x2, self.y2, self.x, self.y))
 
 class QuadraticBezierCurveto(Command):
+    """A quadratic Bezier curveto command."""
     def __init__(self, x1, y1, x, y):
         self.x1 = x1
         self.y1 = y1
@@ -729,6 +741,8 @@ class QuadraticBezierCurveto(Command):
                 (self.x1, self.y1, self.x, self.y))
 
 class SmoothQuadraticBezierCurveto(Command):
+    """A smooth quadratic Bezier curveto command."""
+
     def __init__(self, x, y):
         self.x = x
         self.y = y
@@ -740,6 +754,8 @@ class SmoothQuadraticBezierCurveto(Command):
         return 'SmoothQuadraticBezierCurveto(x=%r, y=%r)' % (self.x, self.y)
 
 class EllipticalArc(Command):
+    """An elliptical arc command."""
+
     def __init__(self, rx, ry, rotation, large, sweep, x, y):
         self.rx = rx
         self.ry = ry
