@@ -30,7 +30,12 @@
       <th>&nbsp;&nbsp;&nbsp;<a
         href="help.html">Help</a>&nbsp;&nbsp;&nbsp;</th>
 
-      <th class="navbar" width="100%"></th>
+  <!-- Project homepage -->
+      <th class="navbar" align="right" width="100%">
+        <table border="0" cellpadding="0" cellspacing="0">
+          <tr><th class="navbar" align="center"
+            ><a class="navbar" target="_top" href="http://elemel.se/pinky/">Pinky</a></th>
+          </tr></table></th>
   </tr>
 </table>
 <table width="100%" cellpadding="0" cellspacing="0">
@@ -39,12 +44,6 @@
     <td>
       <table cellpadding="0" cellspacing="0">
         <!-- hide/show private -->
-        <tr><td align="right"><span class="options">[<a href="javascript:void(0);" class="privatelink"
-    onclick="toggle_private();">hide&nbsp;private</a>]</span></td></tr>
-        <tr><td align="right"><span class="options"
-            >[<a href="frames.html" target="_top">frames</a
-            >]&nbsp;|&nbsp;<a href="identifier-index.html"
-            target="_top">no&nbsp;frames</a>]</span></td></tr>
       </table>
     </td>
   </tr>
@@ -62,7 +61,7 @@
  <a href="#F">F</a>
  <a href="#G">G</a>
  <a href="#H">H</a>
-  I
+ <a href="#I">I</a>
   J
   K
  <a href="#L">L</a>
@@ -70,7 +69,7 @@
   N
   O
  <a href="#P">P</a>
-  Q
+ <a href="#Q">Q</a>
  <a href="#R">R</a>
  <a href="#S">S</a>
  <a href="#T">T</a>
@@ -154,24 +153,32 @@
 <tr>
 <td width="33%" class="link-index"><a href="pinky.BoundingBox-class.html#centroid">centroid</a><br />
 <span class="index-where">(in&nbsp;<a href="pinky.BoundingBox-class.html">BoundingBox</a>)</span></td>
-<td width="33%" class="link-index"><a href="pinky.Point-class.html#centroid">centroid</a><br />
-<span class="index-where">(in&nbsp;<a href="pinky.Point-class.html">Point</a>)</span></td>
-<td width="33%" class="link-index"><a href="pinky.Circle-class.html">Circle</a><br />
+<td width="33%" class="link-index"><a href="pinky.Rect-class.html#centroid">centroid</a><br />
+<span class="index-where">(in&nbsp;<a href="pinky.Rect-class.html">Rect</a>)</span></td>
+<td width="33%" class="link-index"><a href="pinky.Color-class.html">Color</a><br />
 <span class="index-where">(in&nbsp;<a href="pinky-module.html">pinky</a>)</span></td>
 </tr>
 <tr>
 <td width="33%" class="link-index"><a href="pinky.Circle-class.html#centroid">centroid</a><br />
 <span class="index-where">(in&nbsp;<a href="pinky.Circle-class.html">Circle</a>)</span></td>
-<td width="33%" class="link-index"><a href="pinky.Rect-class.html#centroid">centroid</a><br />
-<span class="index-where">(in&nbsp;<a href="pinky.Rect-class.html">Rect</a>)</span></td>
-<td width="33%" class="link-index"><a href="pinky-module.html#colors">colors</a><br />
+<td width="33%" class="link-index"><a href="pinky.Shape-class.html#centroid">centroid</a><br />
+<span class="index-where">(in&nbsp;<a href="pinky.Shape-class.html">Shape</a>)</span></td>
+<td width="33%" class="link-index"><a href="pinky.Command-class.html">Command</a><br />
 <span class="index-where">(in&nbsp;<a href="pinky-module.html">pinky</a>)</span></td>
 </tr>
 <tr>
 <td width="33%" class="link-index"><a href="pinky.Line-class.html#centroid">centroid</a><br />
 <span class="index-where">(in&nbsp;<a href="pinky.Line-class.html">Line</a>)</span></td>
-<td width="33%" class="link-index"><a href="pinky.Shape-class.html#centroid">centroid</a><br />
-<span class="index-where">(in&nbsp;<a href="pinky.Shape-class.html">Shape</a>)</span></td>
+<td width="33%" class="link-index"><a href="pinky.Circle-class.html">Circle</a><br />
+<span class="index-where">(in&nbsp;<a href="pinky-module.html">pinky</a>)</span></td>
+<td width="33%" class="link-index"><a href="pinky.Curveto-class.html">Curveto</a><br />
+<span class="index-where">(in&nbsp;<a href="pinky-module.html">pinky</a>)</span></td>
+</tr>
+<tr>
+<td width="33%" class="link-index"><a href="pinky.Point-class.html#centroid">centroid</a><br />
+<span class="index-where">(in&nbsp;<a href="pinky.Point-class.html">Point</a>)</span></td>
+<td width="33%" class="link-index"><a href="pinky.Closepath-class.html">Closepath</a><br />
+<span class="index-where">(in&nbsp;<a href="pinky-module.html">pinky</a>)</span></td>
 <td width="33%" class="link-index">&nbsp;</td>
 </tr>
 </table>
@@ -194,7 +201,8 @@
 <tr>
 <td width="33%" class="link-index"><a href="pinky.Element-class.html">Element</a><br />
 <span class="index-where">(in&nbsp;<a href="pinky-module.html">pinky</a>)</span></td>
-<td width="33%" class="link-index">&nbsp;</td>
+<td width="33%" class="link-index"><a href="pinky.EllipticalArc-class.html">EllipticalArc</a><br />
+<span class="index-where">(in&nbsp;<a href="pinky-module.html">pinky</a>)</span></td>
 <td width="33%" class="link-index">&nbsp;</td>
 </tr>
 <tr><td class="link-index">&nbsp;</td><td class="link-index">&nbsp;</td><td class="link-index">&nbsp;</td></tr>
@@ -203,6 +211,14 @@
 <tr valign="top"><td valign="top" width="1%"><h2 class="epydoc"><a name="F">F</a></h2></td>
 <td valign="top">
 <table class="link-index" width="100%" border="1">
+<tr>
+<td width="33%" class="link-index"><a href="pinky.Color-class.html#float_components">float_components</a><br />
+<span class="index-where">(in&nbsp;<a href="pinky.Color-class.html">Color</a>)</span></td>
+<td width="33%" class="link-index"><a href="pinky.Matrix-class.html#from_rotate_deg">from_rotate_deg()</a><br />
+<span class="index-where">(in&nbsp;<a href="pinky.Matrix-class.html">Matrix</a>)</span></td>
+<td width="33%" class="link-index"><a href="pinky.Matrix-class.html#from_skew_y_deg">from_skew_y_deg()</a><br />
+<span class="index-where">(in&nbsp;<a href="pinky.Matrix-class.html">Matrix</a>)</span></td>
+</tr>
 <tr>
 <td width="33%" class="link-index"><a href="pinky.Matrix-class.html#from_flip_x">from_flip_x()</a><br />
 <span class="index-where">(in&nbsp;<a href="pinky.Matrix-class.html">Matrix</a>)</span></td>
@@ -215,13 +231,6 @@
 <td width="33%" class="link-index"><a href="pinky.Matrix-class.html#from_flip_y">from_flip_y()</a><br />
 <span class="index-where">(in&nbsp;<a href="pinky.Matrix-class.html">Matrix</a>)</span></td>
 <td width="33%" class="link-index"><a href="pinky.Matrix-class.html#from_skew_x_deg">from_skew_x_deg()</a><br />
-<span class="index-where">(in&nbsp;<a href="pinky.Matrix-class.html">Matrix</a>)</span></td>
-<td width="33%" class="link-index">&nbsp;</td>
-</tr>
-<tr>
-<td width="33%" class="link-index"><a href="pinky.Matrix-class.html#from_rotate_deg">from_rotate_deg()</a><br />
-<span class="index-where">(in&nbsp;<a href="pinky.Matrix-class.html">Matrix</a>)</span></td>
-<td width="33%" class="link-index"><a href="pinky.Matrix-class.html#from_skew_y_deg">from_skew_y_deg()</a><br />
 <span class="index-where">(in&nbsp;<a href="pinky.Matrix-class.html">Matrix</a>)</span></td>
 <td width="33%" class="link-index">&nbsp;</td>
 </tr>
@@ -252,6 +261,18 @@
 <tr><td class="link-index">&nbsp;</td><td class="link-index">&nbsp;</td><td class="link-index">&nbsp;</td></tr>
 </table>
 </td></tr>
+<tr valign="top"><td valign="top" width="1%"><h2 class="epydoc"><a name="I">I</a></h2></td>
+<td valign="top">
+<table class="link-index" width="100%" border="1">
+<tr>
+<td width="33%" class="link-index"><a href="pinky.BoundingBox-class.html#intersects">intersects()</a><br />
+<span class="index-where">(in&nbsp;<a href="pinky.BoundingBox-class.html">BoundingBox</a>)</span></td>
+<td width="33%" class="link-index">&nbsp;</td>
+<td width="33%" class="link-index">&nbsp;</td>
+</tr>
+<tr><td class="link-index">&nbsp;</td><td class="link-index">&nbsp;</td><td class="link-index">&nbsp;</td></tr>
+</table>
+</td></tr>
 <tr valign="top"><td valign="top" width="1%"><h2 class="epydoc"><a name="L">L</a></h2></td>
 <td valign="top">
 <table class="link-index" width="100%" border="1">
@@ -260,7 +281,8 @@
 <span class="index-where">(in&nbsp;<a href="pinky-module.html">pinky</a>)</span></td>
 <td width="33%" class="link-index"><a href="pinky.Path-class.html#linearize">linearize()</a><br />
 <span class="index-where">(in&nbsp;<a href="pinky.Path-class.html">Path</a>)</span></td>
-<td width="33%" class="link-index">&nbsp;</td>
+<td width="33%" class="link-index"><a href="pinky.Lineto-class.html">Lineto</a><br />
+<span class="index-where">(in&nbsp;<a href="pinky-module.html">pinky</a>)</span></td>
 </tr>
 <tr><td class="link-index">&nbsp;</td><td class="link-index">&nbsp;</td><td class="link-index">&nbsp;</td></tr>
 </table>
@@ -271,7 +293,8 @@
 <tr>
 <td width="33%" class="link-index"><a href="pinky.Matrix-class.html">Matrix</a><br />
 <span class="index-where">(in&nbsp;<a href="pinky-module.html">pinky</a>)</span></td>
-<td width="33%" class="link-index">&nbsp;</td>
+<td width="33%" class="link-index"><a href="pinky.Moveto-class.html">Moveto</a><br />
+<span class="index-where">(in&nbsp;<a href="pinky-module.html">pinky</a>)</span></td>
 <td width="33%" class="link-index">&nbsp;</td>
 </tr>
 <tr><td class="link-index">&nbsp;</td><td class="link-index">&nbsp;</td><td class="link-index">&nbsp;</td></tr>
@@ -283,33 +306,46 @@
 <tr>
 <td width="33%" class="link-index"><a href="pinky.Line-class.html#p1">p1</a><br />
 <span class="index-where">(in&nbsp;<a href="pinky.Line-class.html">Line</a>)</span></td>
+<td width="33%" class="link-index"><a href="pinky.Path-class.html#parse">parse()</a><br />
+<span class="index-where">(in&nbsp;<a href="pinky.Path-class.html">Path</a>)</span></td>
+<td width="33%" class="link-index"><a href="pinky-module.html">pinky</a></td>
+</tr>
+<tr>
+<td width="33%" class="link-index"><a href="pinky.Line-class.html#p2">p2</a><br />
+<span class="index-where">(in&nbsp;<a href="pinky.Line-class.html">Line</a>)</span></td>
 <td width="33%" class="link-index"><a href="pinky-module.html#parse_style">parse_style()</a><br />
 <span class="index-where">(in&nbsp;<a href="pinky-module.html">pinky</a>)</span></td>
 <td width="33%" class="link-index"><a href="pinky.Point-class.html">Point</a><br />
 <span class="index-where">(in&nbsp;<a href="pinky-module.html">pinky</a>)</span></td>
 </tr>
 <tr>
-<td width="33%" class="link-index"><a href="pinky.Line-class.html#p2">p2</a><br />
-<span class="index-where">(in&nbsp;<a href="pinky.Line-class.html">Line</a>)</span></td>
+<td width="33%" class="link-index"><a href="pinky.Color-class.html#parse">parse()</a><br />
+<span class="index-where">(in&nbsp;<a href="pinky.Color-class.html">Color</a>)</span></td>
 <td width="33%" class="link-index"><a href="pinky.ParseError-class.html">ParseError</a><br />
 <span class="index-where">(in&nbsp;<a href="pinky-module.html">pinky</a>)</span></td>
 <td width="33%" class="link-index"><a href="pinky.Polygon-class.html">Polygon</a><br />
 <span class="index-where">(in&nbsp;<a href="pinky-module.html">pinky</a>)</span></td>
 </tr>
 <tr>
-<td width="33%" class="link-index"><a href="pinky-module.html#parse_color">parse_color()</a><br />
-<span class="index-where">(in&nbsp;<a href="pinky-module.html">pinky</a>)</span></td>
+<td width="33%" class="link-index"><a href="pinky.Matrix-class.html#parse">parse()</a><br />
+<span class="index-where">(in&nbsp;<a href="pinky.Matrix-class.html">Matrix</a>)</span></td>
 <td width="33%" class="link-index"><a href="pinky.Path-class.html">Path</a><br />
 <span class="index-where">(in&nbsp;<a href="pinky-module.html">pinky</a>)</span></td>
 <td width="33%" class="link-index"><a href="pinky.Polyline-class.html">Polyline</a><br />
 <span class="index-where">(in&nbsp;<a href="pinky-module.html">pinky</a>)</span></td>
 </tr>
+</table>
+</td></tr>
+<tr valign="top"><td valign="top" width="1%"><h2 class="epydoc"><a name="Q">Q</a></h2></td>
+<td valign="top">
+<table class="link-index" width="100%" border="1">
 <tr>
-<td width="33%" class="link-index"><a href="pinky-module.html#parse_float_color">parse_float_color()</a><br />
+<td width="33%" class="link-index"><a href="pinky.QuadraticBezierCurveto-class.html">QuadraticBezierCurveto</a><br />
 <span class="index-where">(in&nbsp;<a href="pinky-module.html">pinky</a>)</span></td>
-<td width="33%" class="link-index"><a href="pinky-module.html">pinky</a></td>
+<td width="33%" class="link-index">&nbsp;</td>
 <td width="33%" class="link-index">&nbsp;</td>
 </tr>
+<tr><td class="link-index">&nbsp;</td><td class="link-index">&nbsp;</td><td class="link-index">&nbsp;</td></tr>
 </table>
 </td></tr>
 <tr valign="top"><td valign="top" width="1%"><h2 class="epydoc"><a name="R">R</a></h2></td>
@@ -331,11 +367,17 @@
 <tr>
 <td width="33%" class="link-index"><a href="pinky.Shape-class.html">Shape</a><br />
 <span class="index-where">(in&nbsp;<a href="pinky-module.html">pinky</a>)</span></td>
+<td width="33%" class="link-index"><a href="pinky.SmoothQuadraticBezierCurveto-class.html">SmoothQuadraticBezierCurveto</a><br />
+<span class="index-where">(in&nbsp;<a href="pinky-module.html">pinky</a>)</span></td>
+<td width="33%" class="link-index">&nbsp;</td>
+</tr>
+<tr>
+<td width="33%" class="link-index"><a href="pinky.SmoothCurveto-class.html">SmoothCurveto</a><br />
+<span class="index-where">(in&nbsp;<a href="pinky-module.html">pinky</a>)</span></td>
 <td width="33%" class="link-index"><a href="pinky.Path-class.html#subpaths">subpaths</a><br />
 <span class="index-where">(in&nbsp;<a href="pinky.Path-class.html">Path</a>)</span></td>
 <td width="33%" class="link-index">&nbsp;</td>
 </tr>
-<tr><td class="link-index">&nbsp;</td><td class="link-index">&nbsp;</td><td class="link-index">&nbsp;</td></tr>
 </table>
 </td></tr>
 <tr valign="top"><td valign="top" width="1%"><h2 class="epydoc"><a name="T">T</a></h2></td>
@@ -385,112 +427,154 @@
 <tr>
 <td width="33%" class="link-index"><a href="pinky.BoundingBox-class.html#__init__">__init__()</a><br />
 <span class="index-where">(in&nbsp;<a href="pinky.BoundingBox-class.html">BoundingBox</a>)</span></td>
-<td width="33%" class="link-index"><a href="pinky.Matrix-class.html#__mul__">__mul__()</a><br />
-<span class="index-where">(in&nbsp;<a href="pinky.Matrix-class.html">Matrix</a>)</span></td>
-<td width="33%" class="link-index"><a href="pinky.Path-class.html#_format_command">_format_command()</a><br />
-<span class="index-where">(in&nbsp;<a href="pinky.Path-class.html">Path</a>)</span></td>
+<td width="33%" class="link-index"><a href="pinky.SmoothCurveto-class.html#__init__">__init__()</a><br />
+<span class="index-where">(in&nbsp;<a href="pinky.SmoothCurveto-class.html">SmoothCurveto</a>)</span></td>
+<td width="33%" class="link-index"><a href="pinky.QuadraticBezierCurveto-class.html#__repr__">__repr__()</a><br />
+<span class="index-where">(in&nbsp;<a href="pinky.QuadraticBezierCurveto-class.html">QuadraticBezierCurveto</a>)</span></td>
 </tr>
 <tr>
 <td width="33%" class="link-index"><a href="pinky.Circle-class.html#__init__">__init__()</a><br />
 <span class="index-where">(in&nbsp;<a href="pinky.Circle-class.html">Circle</a>)</span></td>
+<td width="33%" class="link-index"><a href="pinky.SmoothQuadraticBezierCurveto-class.html#__init__">__init__()</a><br />
+<span class="index-where">(in&nbsp;<a href="pinky.SmoothQuadraticBezierCurveto-class.html">SmoothQuadraticBezierCurveto</a>)</span></td>
+<td width="33%" class="link-index"><a href="pinky.Rect-class.html#__repr__">__repr__()</a><br />
+<span class="index-where">(in&nbsp;<a href="pinky.Rect-class.html">Rect</a>)</span></td>
+</tr>
+<tr>
+<td width="33%" class="link-index"><a href="pinky.Closepath-class.html#__init__">__init__()</a><br />
+<span class="index-where">(in&nbsp;<a href="pinky.Closepath-class.html">Closepath</a>)</span></td>
+<td width="33%" class="link-index"><a href="pinky.Color-class.html#__iter__">__iter__()</a><br />
+<span class="index-where">(in&nbsp;<a href="pinky.Color-class.html">Color</a>)</span></td>
+<td width="33%" class="link-index"><a href="pinky.SmoothCurveto-class.html#__repr__">__repr__()</a><br />
+<span class="index-where">(in&nbsp;<a href="pinky.SmoothCurveto-class.html">SmoothCurveto</a>)</span></td>
+</tr>
+<tr>
+<td width="33%" class="link-index"><a href="pinky.Color-class.html#__init__">__init__()</a><br />
+<span class="index-where">(in&nbsp;<a href="pinky.Color-class.html">Color</a>)</span></td>
+<td width="33%" class="link-index"><a href="pinky.Matrix-class.html#__mul__">__mul__()</a><br />
+<span class="index-where">(in&nbsp;<a href="pinky.Matrix-class.html">Matrix</a>)</span></td>
+<td width="33%" class="link-index"><a href="pinky.SmoothQuadraticBezierCurveto-class.html#__repr__">__repr__()</a><br />
+<span class="index-where">(in&nbsp;<a href="pinky.SmoothQuadraticBezierCurveto-class.html">SmoothQuadraticBezierCurveto</a>)</span></td>
+</tr>
+<tr>
+<td width="33%" class="link-index"><a href="pinky.Curveto-class.html#__init__">__init__()</a><br />
+<span class="index-where">(in&nbsp;<a href="pinky.Curveto-class.html">Curveto</a>)</span></td>
 <td width="33%" class="link-index"><a href="pinky.BoundingBox-class.html#__nonzero__">__nonzero__()</a><br />
 <span class="index-where">(in&nbsp;<a href="pinky.BoundingBox-class.html">BoundingBox</a>)</span></td>
-<td width="33%" class="link-index"><a href="pinky.Matrix-class.html#_parse">_parse()</a><br />
-<span class="index-where">(in&nbsp;<a href="pinky.Matrix-class.html">Matrix</a>)</span></td>
+<td width="33%" class="link-index"><a href="pinky.Closepath-class.html#__str__">__str__()</a><br />
+<span class="index-where">(in&nbsp;<a href="pinky.Closepath-class.html">Closepath</a>)</span></td>
 </tr>
 <tr>
 <td width="33%" class="link-index"><a href="pinky.Document-class.html#__init__">__init__()</a><br />
 <span class="index-where">(in&nbsp;<a href="pinky.Document-class.html">Document</a>)</span></td>
 <td width="33%" class="link-index"><a href="pinky-module.html#__package__">__package__</a><br />
 <span class="index-where">(in&nbsp;<a href="pinky-module.html">pinky</a>)</span></td>
-<td width="33%" class="link-index"><a href="pinky.Document-class.html#_parse_arc_element">_parse_arc_element()</a><br />
-<span class="index-where">(in&nbsp;<a href="pinky.Document-class.html">Document</a>)</span></td>
+<td width="33%" class="link-index"><a href="pinky.Color-class.html#__str__">__str__()</a><br />
+<span class="index-where">(in&nbsp;<a href="pinky.Color-class.html">Color</a>)</span></td>
 </tr>
 <tr>
 <td width="33%" class="link-index"><a href="pinky.Element-class.html#__init__">__init__()</a><br />
 <span class="index-where">(in&nbsp;<a href="pinky.Element-class.html">Element</a>)</span></td>
 <td width="33%" class="link-index"><a href="pinky.BoundingBox-class.html#__repr__">__repr__()</a><br />
 <span class="index-where">(in&nbsp;<a href="pinky.BoundingBox-class.html">BoundingBox</a>)</span></td>
-<td width="33%" class="link-index"><a href="pinky.Document-class.html#_parse_circle_element">_parse_circle_element()</a><br />
-<span class="index-where">(in&nbsp;<a href="pinky.Document-class.html">Document</a>)</span></td>
+<td width="33%" class="link-index"><a href="pinky.Curveto-class.html#__str__">__str__()</a><br />
+<span class="index-where">(in&nbsp;<a href="pinky.Curveto-class.html">Curveto</a>)</span></td>
+</tr>
+<tr>
+<td width="33%" class="link-index"><a href="pinky.EllipticalArc-class.html#__init__">__init__()</a><br />
+<span class="index-where">(in&nbsp;<a href="pinky.EllipticalArc-class.html">EllipticalArc</a>)</span></td>
+<td width="33%" class="link-index"><a href="pinky.Circle-class.html#__repr__">__repr__()</a><br />
+<span class="index-where">(in&nbsp;<a href="pinky.Circle-class.html">Circle</a>)</span></td>
+<td width="33%" class="link-index"><a href="pinky.EllipticalArc-class.html#__str__">__str__()</a><br />
+<span class="index-where">(in&nbsp;<a href="pinky.EllipticalArc-class.html">EllipticalArc</a>)</span></td>
 </tr>
 <tr>
 <td width="33%" class="link-index"><a href="pinky.Group-class.html#__init__">__init__()</a><br />
 <span class="index-where">(in&nbsp;<a href="pinky.Group-class.html">Group</a>)</span></td>
-<td width="33%" class="link-index"><a href="pinky.Circle-class.html#__repr__">__repr__()</a><br />
-<span class="index-where">(in&nbsp;<a href="pinky.Circle-class.html">Circle</a>)</span></td>
-<td width="33%" class="link-index"><a href="pinky.Path-class.html#_parse_commands">_parse_commands()</a><br />
-<span class="index-where">(in&nbsp;<a href="pinky.Path-class.html">Path</a>)</span></td>
+<td width="33%" class="link-index"><a href="pinky.Closepath-class.html#__repr__">__repr__()</a><br />
+<span class="index-where">(in&nbsp;<a href="pinky.Closepath-class.html">Closepath</a>)</span></td>
+<td width="33%" class="link-index"><a href="pinky.Lineto-class.html#__str__">__str__()</a><br />
+<span class="index-where">(in&nbsp;<a href="pinky.Lineto-class.html">Lineto</a>)</span></td>
 </tr>
 <tr>
 <td width="33%" class="link-index"><a href="pinky.Line-class.html#__init__">__init__()</a><br />
 <span class="index-where">(in&nbsp;<a href="pinky.Line-class.html">Line</a>)</span></td>
-<td width="33%" class="link-index"><a href="pinky.Line-class.html#__repr__">__repr__()</a><br />
-<span class="index-where">(in&nbsp;<a href="pinky.Line-class.html">Line</a>)</span></td>
-<td width="33%" class="link-index"><a href="pinky.Document-class.html#_parse_element">_parse_element()</a><br />
-<span class="index-where">(in&nbsp;<a href="pinky.Document-class.html">Document</a>)</span></td>
+<td width="33%" class="link-index"><a href="pinky.Color-class.html#__repr__">__repr__()</a><br />
+<span class="index-where">(in&nbsp;<a href="pinky.Color-class.html">Color</a>)</span></td>
+<td width="33%" class="link-index"><a href="pinky.Matrix-class.html#__str__">__str__()</a><br />
+<span class="index-where">(in&nbsp;<a href="pinky.Matrix-class.html">Matrix</a>)</span></td>
+</tr>
+<tr>
+<td width="33%" class="link-index"><a href="pinky.Lineto-class.html#__init__">__init__()</a><br />
+<span class="index-where">(in&nbsp;<a href="pinky.Lineto-class.html">Lineto</a>)</span></td>
+<td width="33%" class="link-index"><a href="pinky.Curveto-class.html#__repr__">__repr__()</a><br />
+<span class="index-where">(in&nbsp;<a href="pinky.Curveto-class.html">Curveto</a>)</span></td>
+<td width="33%" class="link-index"><a href="pinky.Moveto-class.html#__str__">__str__()</a><br />
+<span class="index-where">(in&nbsp;<a href="pinky.Moveto-class.html">Moveto</a>)</span></td>
 </tr>
 <tr>
 <td width="33%" class="link-index"><a href="pinky.Matrix-class.html#__init__">__init__()</a><br />
 <span class="index-where">(in&nbsp;<a href="pinky.Matrix-class.html">Matrix</a>)</span></td>
-<td width="33%" class="link-index"><a href="pinky.Matrix-class.html#__repr__">__repr__()</a><br />
-<span class="index-where">(in&nbsp;<a href="pinky.Matrix-class.html">Matrix</a>)</span></td>
-<td width="33%" class="link-index"><a href="pinky.Document-class.html#_parse_element_text">_parse_element_text()</a><br />
-<span class="index-where">(in&nbsp;<a href="pinky.Document-class.html">Document</a>)</span></td>
+<td width="33%" class="link-index"><a href="pinky.EllipticalArc-class.html#__repr__">__repr__()</a><br />
+<span class="index-where">(in&nbsp;<a href="pinky.EllipticalArc-class.html">EllipticalArc</a>)</span></td>
+<td width="33%" class="link-index"><a href="pinky.Path-class.html#__str__">__str__()</a><br />
+<span class="index-where">(in&nbsp;<a href="pinky.Path-class.html">Path</a>)</span></td>
+</tr>
+<tr>
+<td width="33%" class="link-index"><a href="pinky.Moveto-class.html#__init__">__init__()</a><br />
+<span class="index-where">(in&nbsp;<a href="pinky.Moveto-class.html">Moveto</a>)</span></td>
+<td width="33%" class="link-index"><a href="pinky.Line-class.html#__repr__">__repr__()</a><br />
+<span class="index-where">(in&nbsp;<a href="pinky.Line-class.html">Line</a>)</span></td>
+<td width="33%" class="link-index"><a href="pinky.QuadraticBezierCurveto-class.html#__str__">__str__()</a><br />
+<span class="index-where">(in&nbsp;<a href="pinky.QuadraticBezierCurveto-class.html">QuadraticBezierCurveto</a>)</span></td>
 </tr>
 <tr>
 <td width="33%" class="link-index"><a href="pinky.Path-class.html#__init__">__init__()</a><br />
 <span class="index-where">(in&nbsp;<a href="pinky.Path-class.html">Path</a>)</span></td>
-<td width="33%" class="link-index"><a href="pinky.Point-class.html#__repr__">__repr__()</a><br />
-<span class="index-where">(in&nbsp;<a href="pinky.Point-class.html">Point</a>)</span></td>
-<td width="33%" class="link-index"><a href="pinky.Document-class.html#_parse_path_element">_parse_path_element()</a><br />
-<span class="index-where">(in&nbsp;<a href="pinky.Document-class.html">Document</a>)</span></td>
+<td width="33%" class="link-index"><a href="pinky.Lineto-class.html#__repr__">__repr__()</a><br />
+<span class="index-where">(in&nbsp;<a href="pinky.Lineto-class.html">Lineto</a>)</span></td>
+<td width="33%" class="link-index"><a href="pinky.SmoothCurveto-class.html#__str__">__str__()</a><br />
+<span class="index-where">(in&nbsp;<a href="pinky.SmoothCurveto-class.html">SmoothCurveto</a>)</span></td>
 </tr>
 <tr>
 <td width="33%" class="link-index"><a href="pinky.Point-class.html#__init__">__init__()</a><br />
 <span class="index-where">(in&nbsp;<a href="pinky.Point-class.html">Point</a>)</span></td>
-<td width="33%" class="link-index"><a href="pinky.Polygon-class.html#__repr__">__repr__()</a><br />
-<span class="index-where">(in&nbsp;<a href="pinky.Polygon-class.html">Polygon</a>)</span></td>
-<td width="33%" class="link-index"><a href="pinky.Document-class.html#_parse_rect_element">_parse_rect_element()</a><br />
-<span class="index-where">(in&nbsp;<a href="pinky.Document-class.html">Document</a>)</span></td>
+<td width="33%" class="link-index"><a href="pinky.Matrix-class.html#__repr__">__repr__()</a><br />
+<span class="index-where">(in&nbsp;<a href="pinky.Matrix-class.html">Matrix</a>)</span></td>
+<td width="33%" class="link-index"><a href="pinky.SmoothQuadraticBezierCurveto-class.html#__str__">__str__()</a><br />
+<span class="index-where">(in&nbsp;<a href="pinky.SmoothQuadraticBezierCurveto-class.html">SmoothQuadraticBezierCurveto</a>)</span></td>
 </tr>
 <tr>
 <td width="33%" class="link-index"><a href="pinky.Polygon-class.html#__init__">__init__()</a><br />
 <span class="index-where">(in&nbsp;<a href="pinky.Polygon-class.html">Polygon</a>)</span></td>
-<td width="33%" class="link-index"><a href="pinky.Polyline-class.html#__repr__">__repr__()</a><br />
-<span class="index-where">(in&nbsp;<a href="pinky.Polyline-class.html">Polyline</a>)</span></td>
-<td width="33%" class="link-index"><a href="pinky.Path-class.html#_scanner">_scanner</a><br />
+<td width="33%" class="link-index"><a href="pinky.Moveto-class.html#__repr__">__repr__()</a><br />
+<span class="index-where">(in&nbsp;<a href="pinky.Moveto-class.html">Moveto</a>)</span></td>
+<td width="33%" class="link-index"><a href="pinky.Path-class.html#_arg_counts">_arg_counts</a><br />
 <span class="index-where">(in&nbsp;<a href="pinky.Path-class.html">Path</a>)</span></td>
 </tr>
 <tr>
 <td width="33%" class="link-index"><a href="pinky.Polyline-class.html#__init__">__init__()</a><br />
 <span class="index-where">(in&nbsp;<a href="pinky.Polyline-class.html">Polyline</a>)</span></td>
-<td width="33%" class="link-index"><a href="pinky.Rect-class.html#__repr__">__repr__()</a><br />
-<span class="index-where">(in&nbsp;<a href="pinky.Rect-class.html">Rect</a>)</span></td>
-<td width="33%" class="link-index"><a href="pinky.Path-class.html#_split_polycommands">_split_polycommands()</a><br />
+<td width="33%" class="link-index"><a href="pinky.Point-class.html#__repr__">__repr__()</a><br />
+<span class="index-where">(in&nbsp;<a href="pinky.Point-class.html">Point</a>)</span></td>
+<td width="33%" class="link-index"><a href="pinky.Color-class.html#_color_keywords">_color_keywords</a><br />
+<span class="index-where">(in&nbsp;<a href="pinky.Color-class.html">Color</a>)</span></td>
+</tr>
+<tr>
+<td width="33%" class="link-index"><a href="pinky.QuadraticBezierCurveto-class.html#__init__">__init__()</a><br />
+<span class="index-where">(in&nbsp;<a href="pinky.QuadraticBezierCurveto-class.html">QuadraticBezierCurveto</a>)</span></td>
+<td width="33%" class="link-index"><a href="pinky.Polygon-class.html#__repr__">__repr__()</a><br />
+<span class="index-where">(in&nbsp;<a href="pinky.Polygon-class.html">Polygon</a>)</span></td>
+<td width="33%" class="link-index"><a href="pinky.Path-class.html#_command_classes">_command_classes</a><br />
 <span class="index-where">(in&nbsp;<a href="pinky.Path-class.html">Path</a>)</span></td>
 </tr>
 <tr>
 <td width="33%" class="link-index"><a href="pinky.Rect-class.html#__init__">__init__()</a><br />
 <span class="index-where">(in&nbsp;<a href="pinky.Rect-class.html">Rect</a>)</span></td>
-<td width="33%" class="link-index"><a href="pinky.Matrix-class.html#__str__">__str__()</a><br />
-<span class="index-where">(in&nbsp;<a href="pinky.Matrix-class.html">Matrix</a>)</span></td>
-<td width="33%" class="link-index"><a href="pinky.Path-class.html#_to_absolute_commands">_to_absolute_commands()</a><br />
+<td width="33%" class="link-index"><a href="pinky.Polyline-class.html#__repr__">__repr__()</a><br />
+<span class="index-where">(in&nbsp;<a href="pinky.Polyline-class.html">Polyline</a>)</span></td>
+<td width="33%" class="link-index"><a href="pinky.Path-class.html#_scanner">_scanner</a><br />
 <span class="index-where">(in&nbsp;<a href="pinky.Path-class.html">Path</a>)</span></td>
-</tr>
-<tr>
-<td width="33%" class="link-index"><a href="pinky.Group-class.html#__iter__">__iter__()</a><br />
-<span class="index-where">(in&nbsp;<a href="pinky.Group-class.html">Group</a>)</span></td>
-<td width="33%" class="link-index"><a href="pinky.Path-class.html#__str__">__str__()</a><br />
-<span class="index-where">(in&nbsp;<a href="pinky.Path-class.html">Path</a>)</span></td>
-<td width="33%" class="link-index">&nbsp;</td>
-</tr>
-<tr>
-<td width="33%" class="link-index"><a href="pinky.Group-class.html#__len__">__len__()</a><br />
-<span class="index-where">(in&nbsp;<a href="pinky.Group-class.html">Group</a>)</span></td>
-<td width="33%" class="link-index"><a href="pinky.Path-class.html#_arg_counts">_arg_counts</a><br />
-<span class="index-where">(in&nbsp;<a href="pinky.Path-class.html">Path</a>)</span></td>
-<td width="33%" class="link-index">&nbsp;</td>
 </tr>
 </table>
 </td></tr>
@@ -515,13 +599,18 @@
       <th>&nbsp;&nbsp;&nbsp;<a
         href="help.html">Help</a>&nbsp;&nbsp;&nbsp;</th>
 
-      <th class="navbar" width="100%"></th>
+  <!-- Project homepage -->
+      <th class="navbar" align="right" width="100%">
+        <table border="0" cellpadding="0" cellspacing="0">
+          <tr><th class="navbar" align="center"
+            ><a class="navbar" target="_top" href="http://elemel.se/pinky/">Pinky</a></th>
+          </tr></table></th>
   </tr>
 </table>
 <table border="0" cellpadding="0" cellspacing="0" width="100%%">
   <tr>
     <td align="left" class="footer">
-    Generated by Epydoc 3.0.1 on Sat May 22 11:57:31 2010
+    Generated by Epydoc 3.0.1 on Sun May 30 14:22:47 2010
     </td>
     <td align="right" class="footer">
       <a target="mainFrame" href="http://epydoc.sourceforge.net"

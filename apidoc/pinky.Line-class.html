@@ -3,7 +3,7 @@
           "DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head>
-  <title>pinky.Group</title>
+  <title>pinky.Line</title>
   <link rel="stylesheet" href="epydoc.css" type="text/css" />
   <script type="text/javascript" src="epydoc.js"></script>
 </head>
@@ -30,7 +30,12 @@
       <th>&nbsp;&nbsp;&nbsp;<a
         href="help.html">Help</a>&nbsp;&nbsp;&nbsp;</th>
 
-      <th class="navbar" width="100%"></th>
+  <!-- Project homepage -->
+      <th class="navbar" align="right" width="100%">
+        <table border="0" cellpadding="0" cellspacing="0">
+          <tr><th class="navbar" align="center"
+            ><a class="navbar" target="_top" href="http://elemel.se/pinky/">Pinky</a></th>
+          </tr></table></th>
   </tr>
 </table>
 <table width="100%" cellpadding="0" cellspacing="0">
@@ -38,51 +43,36 @@
     <td width="100%">
       <span class="breadcrumbs">
         <a href="pinky-module.html">Module&nbsp;pinky</a> ::
-        Class&nbsp;Group
+        Class&nbsp;Line
       </span>
     </td>
     <td>
       <table cellpadding="0" cellspacing="0">
         <!-- hide/show private -->
-        <tr><td align="right"><span class="options">[<a href="javascript:void(0);" class="privatelink"
-    onclick="toggle_private();">hide&nbsp;private</a>]</span></td></tr>
-        <tr><td align="right"><span class="options"
-            >[<a href="frames.html" target="_top">frames</a
-            >]&nbsp;|&nbsp;<a href="pinky.Group-class.html"
-            target="_top">no&nbsp;frames</a>]</span></td></tr>
       </table>
     </td>
   </tr>
 </table>
 <!-- ==================== CLASS DESCRIPTION ==================== -->
-<h1 class="epydoc">Class Group</h1><p class="nomargin-top"><span class="codelink"><a href="pinky-pysrc.html#Group">source&nbsp;code</a></span></p>
+<h1 class="epydoc">Class Line</h1><p class="nomargin-top"></p>
 <pre class="base-tree">
 object --+    
          |    
      <a href="pinky.Shape-class.html">Shape</a> --+
              |
-            <strong class="uidshort">Group</strong>
+            <strong class="uidshort">Line</strong>
 </pre>
 
 <hr />
-<p>A group of shapes.</p>
+<p>A line.</p>
 
 <!-- ==================== INSTANCE METHODS ==================== -->
 <a name="section-InstanceMethods"></a>
 <table class="summary" border="1" cellpadding="3"
        cellspacing="0" width="100%" bgcolor="white">
 <tr bgcolor="#70b0f0" class="table-header">
-  <td colspan="2" class="table-header">
-    <table border="0" cellpadding="0" cellspacing="0" width="100%">
-      <tr valign="top">
-        <td align="left"><span class="table-header">Instance Methods</span></td>
-        <td align="right" valign="top"
-         ><span class="options">[<a href="#section-InstanceMethods"
-         class="privatelink" onclick="toggle_private();"
-         >hide private</a>]</span></td>
-      </tr>
-    </table>
-  </td>
+  <td align="left" colspan="2" class="table-header">
+    <span class="table-header">Instance Methods</span></td>
 </tr>
 <tr>
     <td width="15%" align="right" valign="top" class="summary">
@@ -90,11 +80,14 @@ object --+
     </td><td class="summary">
       <table width="100%" cellpadding="0" cellspacing="0" border="0">
         <tr>
-          <td><span class="summary-sig"><a href="pinky.Group-class.html#__init__" class="summary-sig-name">__init__</a>(<span class="summary-sig-arg">self</span>,
-        <span class="summary-sig-arg">shapes</span>=<span class="summary-sig-default"><code class="variable-group">[</code><code class="variable-group">]</code></span>)</span><br />
-      Initialize a group from the given shapes.</td>
+          <td><span class="summary-sig"><a href="pinky.Line-class.html#__init__" class="summary-sig-name">__init__</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">x1</span>,
+        <span class="summary-sig-arg">y1</span>,
+        <span class="summary-sig-arg">x2</span>,
+        <span class="summary-sig-arg">y2</span>)</span><br />
+      Initialize a line from two points.</td>
           <td align="right" valign="top">
-            <span class="codelink"><a href="pinky-pysrc.html#Group.__init__">source&nbsp;code</a></span>
+            
             
           </td>
         </tr>
@@ -108,10 +101,10 @@ object --+
     </td><td class="summary">
       <table width="100%" cellpadding="0" cellspacing="0" border="0">
         <tr>
-          <td><span class="summary-sig"><a name="__len__"></a><span class="summary-sig-name">__len__</span>(<span class="summary-sig-arg">self</span>)</span><br />
-      The number of shapes in the group.</td>
+          <td><span class="summary-sig"><a href="pinky.Line-class.html#__repr__" class="summary-sig-name">__repr__</a>(<span class="summary-sig-arg">self</span>)</span><br />
+      repr(x)</td>
           <td align="right" valign="top">
-            <span class="codelink"><a href="pinky-pysrc.html#Group.__len__">source&nbsp;code</a></span>
+            
             
           </td>
         </tr>
@@ -125,28 +118,11 @@ object --+
     </td><td class="summary">
       <table width="100%" cellpadding="0" cellspacing="0" border="0">
         <tr>
-          <td><span class="summary-sig"><a name="__iter__"></a><span class="summary-sig-name">__iter__</span>(<span class="summary-sig-arg">self</span>)</span><br />
-      Iterate over the shapes in the group.</td>
-          <td align="right" valign="top">
-            <span class="codelink"><a href="pinky-pysrc.html#Group.__iter__">source&nbsp;code</a></span>
-            
-          </td>
-        </tr>
-      </table>
-      
-    </td>
-  </tr>
-<tr>
-    <td width="15%" align="right" valign="top" class="summary">
-      <span class="summary-type">&nbsp;</span>
-    </td><td class="summary">
-      <table width="100%" cellpadding="0" cellspacing="0" border="0">
-        <tr>
-          <td><span class="summary-sig"><a href="pinky.Group-class.html#transform" class="summary-sig-name">transform</a>(<span class="summary-sig-arg">self</span>,
+          <td><span class="summary-sig"><a href="pinky.Line-class.html#transform" class="summary-sig-name">transform</a>(<span class="summary-sig-arg">self</span>,
         <span class="summary-sig-arg">matrix</span>)</span><br />
       Get a transformed copy of the shape.</td>
           <td align="right" valign="top">
-            <span class="codelink"><a href="pinky-pysrc.html#Group.transform">source&nbsp;code</a></span>
+            
             
           </td>
         </tr>
@@ -164,7 +140,6 @@ object --+
       <code>__new__</code>,
       <code>__reduce__</code>,
       <code>__reduce_ex__</code>,
-      <code>__repr__</code>,
       <code>__setattr__</code>,
       <code>__sizeof__</code>,
       <code>__str__</code>,
@@ -178,39 +153,51 @@ object --+
 <table class="summary" border="1" cellpadding="3"
        cellspacing="0" width="100%" bgcolor="white">
 <tr bgcolor="#70b0f0" class="table-header">
-  <td colspan="2" class="table-header">
-    <table border="0" cellpadding="0" cellspacing="0" width="100%">
-      <tr valign="top">
-        <td align="left"><span class="table-header">Properties</span></td>
-        <td align="right" valign="top"
-         ><span class="options">[<a href="#section-Properties"
-         class="privatelink" onclick="toggle_private();"
-         >hide private</a>]</span></td>
-      </tr>
-    </table>
-  </td>
+  <td align="left" colspan="2" class="table-header">
+    <span class="table-header">Properties</span></td>
 </tr>
 <tr>
     <td width="15%" align="right" valign="top" class="summary">
       <span class="summary-type">&nbsp;</span>
     </td><td class="summary">
-        <a href="pinky.Group-class.html#bounding_box" class="summary-name">bounding_box</a><br />
-      The bounding box containing all of the shapes in the group.
+        <a href="pinky.Line-class.html#p1" class="summary-name">p1</a><br />
+      The first point.
     </td>
   </tr>
 <tr>
     <td width="15%" align="right" valign="top" class="summary">
       <span class="summary-type">&nbsp;</span>
     </td><td class="summary">
-        <a href="pinky.Group-class.html#area" class="summary-name">area</a><br />
-      The sum of the area of each shape in the group.
+        <a href="pinky.Line-class.html#p2" class="summary-name">p2</a><br />
+      The second point.
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+        <a href="pinky.Line-class.html#area" class="summary-name">area</a><br />
+      The area of a line is always zero.
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+        <a href="pinky.Line-class.html#centroid" class="summary-name">centroid</a><br />
+      The center point of the line.
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+        <a href="pinky.Line-class.html#bounding_box" class="summary-name">bounding_box</a><br />
+      The bounding box of the shape.
     </td>
   </tr>
   <tr>
     <td colspan="2" class="summary">
-    <p class="indent-wrapped-lines"><b>Inherited from <code><a href="pinky.Shape-class.html">Shape</a></code></b>:
-      <code><a href="pinky.Shape-class.html#centroid">centroid</a></code>
-      </p>
     <p class="indent-wrapped-lines"><b>Inherited from <code>object</code></b>:
       <code>__class__</code>
       </p>
@@ -222,17 +209,8 @@ object --+
 <table class="details" border="1" cellpadding="3"
        cellspacing="0" width="100%" bgcolor="white">
 <tr bgcolor="#70b0f0" class="table-header">
-  <td colspan="2" class="table-header">
-    <table border="0" cellpadding="0" cellspacing="0" width="100%">
-      <tr valign="top">
-        <td align="left"><span class="table-header">Method Details</span></td>
-        <td align="right" valign="top"
-         ><span class="options">[<a href="#section-MethodDetails"
-         class="privatelink" onclick="toggle_private();"
-         >hide private</a>]</span></td>
-      </tr>
-    </table>
-  </td>
+  <td align="left" colspan="2" class="table-header">
+    <span class="table-header">Method Details</span></td>
 </tr>
 </table>
 <a name="__init__"></a>
@@ -243,18 +221,45 @@ object --+
   <table width="100%" cellpadding="0" cellspacing="0" border="0">
   <tr valign="top"><td>
   <h3 class="epydoc"><span class="sig"><span class="sig-name">__init__</span>(<span class="sig-arg">self</span>,
-        <span class="sig-arg">shapes</span>=<span class="sig-default"><code class="variable-group">[</code><code class="variable-group">]</code></span>)</span>
+        <span class="sig-arg">x1</span>,
+        <span class="sig-arg">y1</span>,
+        <span class="sig-arg">x2</span>,
+        <span class="sig-arg">y2</span>)</span>
     <br /><em class="fname">(Constructor)</em>
   </h3>
   </td><td align="right" valign="top"
-    ><span class="codelink"><a href="pinky-pysrc.html#Group.__init__">source&nbsp;code</a></span>&nbsp;
+    >&nbsp;
     </td>
   </tr></table>
   
-  <p>Initialize a group from the given shapes.</p>
+  <p>Initialize a line from two points.</p>
   <dl class="fields">
     <dt>Overrides:
         object.__init__
+    </dt>
+  </dl>
+</td></tr></table>
+</div>
+<a name="__repr__"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">__repr__</span>(<span class="sig-arg">self</span>)</span>
+    <br /><em class="fname">(Representation operator)</em>
+  </h3>
+  </td><td align="right" valign="top"
+    >&nbsp;
+    </td>
+  </tr></table>
+  
+  <p>repr(x)</p>
+  <dl class="fields">
+    <dt>Overrides:
+        object.__repr__
+        <dd><em class="note">(inherited documentation)</em></dd>
     </dt>
   </dl>
 </td></tr></table>
@@ -270,7 +275,7 @@ object --+
         <span class="sig-arg">matrix</span>)</span>
   </h3>
   </td><td align="right" valign="top"
-    ><span class="codelink"><a href="pinky-pysrc.html#Group.transform">source&nbsp;code</a></span>&nbsp;
+    >&nbsp;
     </td>
   </tr></table>
   
@@ -289,30 +294,36 @@ object --+
 <table class="details" border="1" cellpadding="3"
        cellspacing="0" width="100%" bgcolor="white">
 <tr bgcolor="#70b0f0" class="table-header">
-  <td colspan="2" class="table-header">
-    <table border="0" cellpadding="0" cellspacing="0" width="100%">
-      <tr valign="top">
-        <td align="left"><span class="table-header">Property Details</span></td>
-        <td align="right" valign="top"
-         ><span class="options">[<a href="#section-PropertyDetails"
-         class="privatelink" onclick="toggle_private();"
-         >hide private</a>]</span></td>
-      </tr>
-    </table>
-  </td>
+  <td align="left" colspan="2" class="table-header">
+    <span class="table-header">Property Details</span></td>
 </tr>
 </table>
-<a name="bounding_box"></a>
+<a name="p1"></a>
 <div>
 <table class="details" border="1" cellpadding="3"
        cellspacing="0" width="100%" bgcolor="white">
 <tr><td>
-  <h3 class="epydoc">bounding_box</h3>
-  <p>The bounding box containing all of the shapes in the group.</p>
+  <h3 class="epydoc">p1</h3>
+  <p>The first point.</p>
   <dl class="fields">
     <dt>Get Method:</dt>
-    <dd class="value"><span class="summary-sig"><i>unreachable</i>.bounding_box(<span class="summary-sig-arg">self</span>)</span>
-        - The bounding box containing all of the shapes in the group.
+    <dd class="value"><span class="summary-sig"><i>unreachable</i>.p1(<span class="summary-sig-arg">self</span>)</span>
+        - The first point.
+    </dd>
+  </dl>
+</td></tr></table>
+</div>
+<a name="p2"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <h3 class="epydoc">p2</h3>
+  <p>The second point.</p>
+  <dl class="fields">
+    <dt>Get Method:</dt>
+    <dd class="value"><span class="summary-sig"><i>unreachable</i>.p2(<span class="summary-sig-arg">self</span>)</span>
+        - The second point.
     </dd>
   </dl>
 </td></tr></table>
@@ -323,11 +334,40 @@ object --+
        cellspacing="0" width="100%" bgcolor="white">
 <tr><td>
   <h3 class="epydoc">area</h3>
-  <p>The sum of the area of each shape in the group.</p>
+  <p>The area of a line is always zero.</p>
   <dl class="fields">
     <dt>Get Method:</dt>
     <dd class="value"><span class="summary-sig"><i>unreachable</i>.area(<span class="summary-sig-arg">self</span>)</span>
-        - The sum of the area of each shape in the group.
+        - The area of a line is always zero.
+    </dd>
+  </dl>
+</td></tr></table>
+</div>
+<a name="centroid"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <h3 class="epydoc">centroid</h3>
+  <p>The center point of the line.</p>
+  <dl class="fields">
+    <dt>Get Method:</dt>
+    <dd class="value"><span class="summary-sig"><i>unreachable</i>.centroid(<span class="summary-sig-arg">self</span>)</span>
+        - The center point of the line.
+    </dd>
+  </dl>
+</td></tr></table>
+</div>
+<a name="bounding_box"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <h3 class="epydoc">bounding_box</h3>
+  <p>The bounding box of the shape.</p>
+  <dl class="fields">
+    <dt>Get Method:</dt>
+    <dd class="value"><span class="summary-sig"><i>unreachable</i>.bounding_box(<span class="summary-sig-arg">self</span>)</span>
     </dd>
   </dl>
 </td></tr></table>
@@ -353,13 +393,18 @@ object --+
       <th>&nbsp;&nbsp;&nbsp;<a
         href="help.html">Help</a>&nbsp;&nbsp;&nbsp;</th>
 
-      <th class="navbar" width="100%"></th>
+  <!-- Project homepage -->
+      <th class="navbar" align="right" width="100%">
+        <table border="0" cellpadding="0" cellspacing="0">
+          <tr><th class="navbar" align="center"
+            ><a class="navbar" target="_top" href="http://elemel.se/pinky/">Pinky</a></th>
+          </tr></table></th>
   </tr>
 </table>
 <table border="0" cellpadding="0" cellspacing="0" width="100%%">
   <tr>
     <td align="left" class="footer">
-    Generated by Epydoc 3.0.1 on Sat May 22 11:57:32 2010
+    Generated by Epydoc 3.0.1 on Sun May 30 14:22:47 2010
     </td>
     <td align="right" class="footer">
       <a target="mainFrame" href="http://epydoc.sourceforge.net"

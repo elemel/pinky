@@ -3,7 +3,7 @@
           "DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head>
-  <title>pinky.BoundingBox</title>
+  <title>pinky.Polygon</title>
   <link rel="stylesheet" href="epydoc.css" type="text/css" />
   <script type="text/javascript" src="epydoc.js"></script>
 </head>
@@ -30,7 +30,12 @@
       <th>&nbsp;&nbsp;&nbsp;<a
         href="help.html">Help</a>&nbsp;&nbsp;&nbsp;</th>
 
-      <th class="navbar" width="100%"></th>
+  <!-- Project homepage -->
+      <th class="navbar" align="right" width="100%">
+        <table border="0" cellpadding="0" cellspacing="0">
+          <tr><th class="navbar" align="center"
+            ><a class="navbar" target="_top" href="http://elemel.se/pinky/">Pinky</a></th>
+          </tr></table></th>
   </tr>
 </table>
 <table width="100%" cellpadding="0" cellspacing="0">
@@ -38,52 +43,36 @@
     <td width="100%">
       <span class="breadcrumbs">
         <a href="pinky-module.html">Module&nbsp;pinky</a> ::
-        Class&nbsp;BoundingBox
+        Class&nbsp;Polygon
       </span>
     </td>
     <td>
       <table cellpadding="0" cellspacing="0">
         <!-- hide/show private -->
-        <tr><td align="right"><span class="options">[<a href="javascript:void(0);" class="privatelink"
-    onclick="toggle_private();">hide&nbsp;private</a>]</span></td></tr>
-        <tr><td align="right"><span class="options"
-            >[<a href="frames.html" target="_top">frames</a
-            >]&nbsp;|&nbsp;<a href="pinky.BoundingBox-class.html"
-            target="_top">no&nbsp;frames</a>]</span></td></tr>
       </table>
     </td>
   </tr>
 </table>
 <!-- ==================== CLASS DESCRIPTION ==================== -->
-<h1 class="epydoc">Class BoundingBox</h1><p class="nomargin-top"><span class="codelink"><a href="pinky-pysrc.html#BoundingBox">source&nbsp;code</a></span></p>
+<h1 class="epydoc">Class Polygon</h1><p class="nomargin-top"></p>
 <pre class="base-tree">
 object --+    
          |    
      <a href="pinky.Shape-class.html">Shape</a> --+
              |
-            <strong class="uidshort">BoundingBox</strong>
+            <strong class="uidshort">Polygon</strong>
 </pre>
 
 <hr />
-<p>An axis-aligned rectangle for representing shape boundaries.</p>
-  <p>See: http://www.w3.org/TR/SVG/coords.html#ObjectBoundingBox</p>
+<p>A polygon.</p>
 
 <!-- ==================== INSTANCE METHODS ==================== -->
 <a name="section-InstanceMethods"></a>
 <table class="summary" border="1" cellpadding="3"
        cellspacing="0" width="100%" bgcolor="white">
 <tr bgcolor="#70b0f0" class="table-header">
-  <td colspan="2" class="table-header">
-    <table border="0" cellpadding="0" cellspacing="0" width="100%">
-      <tr valign="top">
-        <td align="left"><span class="table-header">Instance Methods</span></td>
-        <td align="right" valign="top"
-         ><span class="options">[<a href="#section-InstanceMethods"
-         class="privatelink" onclick="toggle_private();"
-         >hide private</a>]</span></td>
-      </tr>
-    </table>
-  </td>
+  <td align="left" colspan="2" class="table-header">
+    <span class="table-header">Instance Methods</span></td>
 </tr>
 <tr>
     <td width="15%" align="right" valign="top" class="summary">
@@ -91,14 +80,11 @@ object --+
     </td><td class="summary">
       <table width="100%" cellpadding="0" cellspacing="0" border="0">
         <tr>
-          <td><span class="summary-sig"><a href="pinky.BoundingBox-class.html#__init__" class="summary-sig-name">__init__</a>(<span class="summary-sig-arg">self</span>,
-        <span class="summary-sig-arg">min_x</span>=<span class="summary-sig-default">inf</span>,
-        <span class="summary-sig-arg">min_y</span>=<span class="summary-sig-default">inf</span>,
-        <span class="summary-sig-arg">max_x</span>=<span class="summary-sig-default">-inf</span>,
-        <span class="summary-sig-arg">max_y</span>=<span class="summary-sig-default">-inf</span>)</span><br />
-      Initialize a bounding box from the given minima and maxima.</td>
+          <td><span class="summary-sig"><a href="pinky.Polygon-class.html#__init__" class="summary-sig-name">__init__</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">points</span>)</span><br />
+      x.__init__(...) initializes x; see x.__class__.__doc__ for signature</td>
           <td align="right" valign="top">
-            <span class="codelink"><a href="pinky-pysrc.html#BoundingBox.__init__">source&nbsp;code</a></span>
+            
             
           </td>
         </tr>
@@ -112,27 +98,10 @@ object --+
     </td><td class="summary">
       <table width="100%" cellpadding="0" cellspacing="0" border="0">
         <tr>
-          <td><span class="summary-sig"><a name="__nonzero__"></a><span class="summary-sig-name">__nonzero__</span>(<span class="summary-sig-arg">self</span>)</span><br />
-      Is the bounding box empty?</td>
-          <td align="right" valign="top">
-            <span class="codelink"><a href="pinky-pysrc.html#BoundingBox.__nonzero__">source&nbsp;code</a></span>
-            
-          </td>
-        </tr>
-      </table>
-      
-    </td>
-  </tr>
-<tr>
-    <td width="15%" align="right" valign="top" class="summary">
-      <span class="summary-type">&nbsp;</span>
-    </td><td class="summary">
-      <table width="100%" cellpadding="0" cellspacing="0" border="0">
-        <tr>
-          <td><span class="summary-sig"><a href="pinky.BoundingBox-class.html#__repr__" class="summary-sig-name">__repr__</a>(<span class="summary-sig-arg">self</span>)</span><br />
+          <td><span class="summary-sig"><a href="pinky.Polygon-class.html#__repr__" class="summary-sig-name">__repr__</a>(<span class="summary-sig-arg">self</span>)</span><br />
       repr(x)</td>
           <td align="right" valign="top">
-            <span class="codelink"><a href="pinky-pysrc.html#BoundingBox.__repr__">source&nbsp;code</a></span>
+            
             
           </td>
         </tr>
@@ -146,10 +115,28 @@ object --+
     </td><td class="summary">
       <table width="100%" cellpadding="0" cellspacing="0" border="0">
         <tr>
-          <td><span class="summary-sig"><a name="add"></a><span class="summary-sig-name">add</span>(<span class="summary-sig-arg">self</span>,
-        <span class="summary-sig-arg">shape</span>)</span></td>
+          <td><span class="summary-sig"><a href="pinky.Polygon-class.html#transform" class="summary-sig-name">transform</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">matrix</span>)</span><br />
+      Get a transformed copy of the shape.</td>
           <td align="right" valign="top">
-            <span class="codelink"><a href="pinky-pysrc.html#BoundingBox.add">source&nbsp;code</a></span>
+            
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="repair"></a><span class="summary-sig-name">repair</span>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">epsilon</span>=<span class="summary-sig-default">0.0</span>)</span></td>
+          <td align="right" valign="top">
+            
             
           </td>
         </tr>
@@ -159,9 +146,6 @@ object --+
   </tr>
   <tr>
     <td colspan="2" class="summary">
-    <p class="indent-wrapped-lines"><b>Inherited from <code><a href="pinky.Shape-class.html">Shape</a></code></b>:
-      <code><a href="pinky.Shape-class.html#transform">transform</a></code>
-      </p>
     <p class="indent-wrapped-lines"><b>Inherited from <code>object</code></b>:
       <code>__delattr__</code>,
       <code>__format__</code>,
@@ -183,60 +167,30 @@ object --+
 <table class="summary" border="1" cellpadding="3"
        cellspacing="0" width="100%" bgcolor="white">
 <tr bgcolor="#70b0f0" class="table-header">
-  <td colspan="2" class="table-header">
-    <table border="0" cellpadding="0" cellspacing="0" width="100%">
-      <tr valign="top">
-        <td align="left"><span class="table-header">Properties</span></td>
-        <td align="right" valign="top"
-         ><span class="options">[<a href="#section-Properties"
-         class="privatelink" onclick="toggle_private();"
-         >hide private</a>]</span></td>
-      </tr>
-    </table>
-  </td>
+  <td align="left" colspan="2" class="table-header">
+    <span class="table-header">Properties</span></td>
 </tr>
 <tr>
     <td width="15%" align="right" valign="top" class="summary">
       <span class="summary-type">&nbsp;</span>
     </td><td class="summary">
-        <a href="pinky.BoundingBox-class.html#bounding_box" class="summary-name">bounding_box</a><br />
-      The bounding box itself.
+        <a href="pinky.Polygon-class.html#area" class="summary-name">area</a><br />
+      The area of the polygon.
     </td>
   </tr>
 <tr>
     <td width="15%" align="right" valign="top" class="summary">
       <span class="summary-type">&nbsp;</span>
     </td><td class="summary">
-        <a href="pinky.BoundingBox-class.html#width" class="summary-name">width</a><br />
-      The width of the bounding box.
-    </td>
-  </tr>
-<tr>
-    <td width="15%" align="right" valign="top" class="summary">
-      <span class="summary-type">&nbsp;</span>
-    </td><td class="summary">
-        <a href="pinky.BoundingBox-class.html#height" class="summary-name">height</a><br />
-      The height of the bounding box.
-    </td>
-  </tr>
-<tr>
-    <td width="15%" align="right" valign="top" class="summary">
-      <span class="summary-type">&nbsp;</span>
-    </td><td class="summary">
-        <a href="pinky.BoundingBox-class.html#area" class="summary-name">area</a><br />
-      The area of the shape.
-    </td>
-  </tr>
-<tr>
-    <td width="15%" align="right" valign="top" class="summary">
-      <span class="summary-type">&nbsp;</span>
-    </td><td class="summary">
-        <a href="pinky.BoundingBox-class.html#centroid" class="summary-name">centroid</a><br />
-      The mass center of the shape.
+        <a href="pinky.Polygon-class.html#bounding_box" class="summary-name">bounding_box</a><br />
+      The bounding box of the shape.
     </td>
   </tr>
   <tr>
     <td colspan="2" class="summary">
+    <p class="indent-wrapped-lines"><b>Inherited from <code><a href="pinky.Shape-class.html">Shape</a></code></b>:
+      <code><a href="pinky.Shape-class.html#centroid">centroid</a></code>
+      </p>
     <p class="indent-wrapped-lines"><b>Inherited from <code>object</code></b>:
       <code>__class__</code>
       </p>
@@ -248,17 +202,8 @@ object --+
 <table class="details" border="1" cellpadding="3"
        cellspacing="0" width="100%" bgcolor="white">
 <tr bgcolor="#70b0f0" class="table-header">
-  <td colspan="2" class="table-header">
-    <table border="0" cellpadding="0" cellspacing="0" width="100%">
-      <tr valign="top">
-        <td align="left"><span class="table-header">Method Details</span></td>
-        <td align="right" valign="top"
-         ><span class="options">[<a href="#section-MethodDetails"
-         class="privatelink" onclick="toggle_private();"
-         >hide private</a>]</span></td>
-      </tr>
-    </table>
-  </td>
+  <td align="left" colspan="2" class="table-header">
+    <span class="table-header">Method Details</span></td>
 </tr>
 </table>
 <a name="__init__"></a>
@@ -269,21 +214,20 @@ object --+
   <table width="100%" cellpadding="0" cellspacing="0" border="0">
   <tr valign="top"><td>
   <h3 class="epydoc"><span class="sig"><span class="sig-name">__init__</span>(<span class="sig-arg">self</span>,
-        <span class="sig-arg">min_x</span>=<span class="sig-default">inf</span>,
-        <span class="sig-arg">min_y</span>=<span class="sig-default">inf</span>,
-        <span class="sig-arg">max_x</span>=<span class="sig-default">-inf</span>,
-        <span class="sig-arg">max_y</span>=<span class="sig-default">-inf</span>)</span>
+        <span class="sig-arg">points</span>)</span>
     <br /><em class="fname">(Constructor)</em>
   </h3>
   </td><td align="right" valign="top"
-    ><span class="codelink"><a href="pinky-pysrc.html#BoundingBox.__init__">source&nbsp;code</a></span>&nbsp;
+    >&nbsp;
     </td>
   </tr></table>
   
-  <p>Initialize a bounding box from the given minima and maxima.</p>
+  <p>x.__init__(...) initializes x; see x.__class__.__doc__ for 
+  signature</p>
   <dl class="fields">
     <dt>Overrides:
         object.__init__
+        <dd><em class="note">(inherited documentation)</em></dd>
     </dt>
   </dl>
 </td></tr></table>
@@ -299,7 +243,7 @@ object --+
     <br /><em class="fname">(Representation operator)</em>
   </h3>
   </td><td align="right" valign="top"
-    ><span class="codelink"><a href="pinky-pysrc.html#BoundingBox.__repr__">source&nbsp;code</a></span>&nbsp;
+    >&nbsp;
     </td>
   </tr></table>
   
@@ -312,94 +256,66 @@ object --+
   </dl>
 </td></tr></table>
 </div>
+<a name="transform"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">transform</span>(<span class="sig-arg">self</span>,
+        <span class="sig-arg">matrix</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    >&nbsp;
+    </td>
+  </tr></table>
+  
+  <p>Get a transformed copy of the shape.</p>
+  <dl class="fields">
+    <dt>Overrides:
+        <a href="pinky.Shape-class.html#transform">Shape.transform</a>
+        <dd><em class="note">(inherited documentation)</em></dd>
+    </dt>
+  </dl>
+</td></tr></table>
+</div>
 <br />
 <!-- ==================== PROPERTY DETAILS ==================== -->
 <a name="section-PropertyDetails"></a>
 <table class="details" border="1" cellpadding="3"
        cellspacing="0" width="100%" bgcolor="white">
 <tr bgcolor="#70b0f0" class="table-header">
-  <td colspan="2" class="table-header">
-    <table border="0" cellpadding="0" cellspacing="0" width="100%">
-      <tr valign="top">
-        <td align="left"><span class="table-header">Property Details</span></td>
-        <td align="right" valign="top"
-         ><span class="options">[<a href="#section-PropertyDetails"
-         class="privatelink" onclick="toggle_private();"
-         >hide private</a>]</span></td>
-      </tr>
-    </table>
-  </td>
+  <td align="left" colspan="2" class="table-header">
+    <span class="table-header">Property Details</span></td>
 </tr>
 </table>
-<a name="bounding_box"></a>
-<div>
-<table class="details" border="1" cellpadding="3"
-       cellspacing="0" width="100%" bgcolor="white">
-<tr><td>
-  <h3 class="epydoc">bounding_box</h3>
-  <p>The bounding box itself.</p>
-  <dl class="fields">
-    <dt>Get Method:</dt>
-    <dd class="value"><span class="summary-sig"><i>unreachable</i>.bounding_box(<span class="summary-sig-arg">self</span>)</span>
-        - The bounding box itself.
-    </dd>
-  </dl>
-</td></tr></table>
-</div>
-<a name="width"></a>
-<div>
-<table class="details" border="1" cellpadding="3"
-       cellspacing="0" width="100%" bgcolor="white">
-<tr><td>
-  <h3 class="epydoc">width</h3>
-  <p>The width of the bounding box.</p>
-  <dl class="fields">
-    <dt>Get Method:</dt>
-    <dd class="value"><span class="summary-sig"><i>unreachable</i>.width(<span class="summary-sig-arg">self</span>)</span>
-        - The width of the bounding box.
-    </dd>
-  </dl>
-</td></tr></table>
-</div>
-<a name="height"></a>
-<div>
-<table class="details" border="1" cellpadding="3"
-       cellspacing="0" width="100%" bgcolor="white">
-<tr><td>
-  <h3 class="epydoc">height</h3>
-  <p>The height of the bounding box.</p>
-  <dl class="fields">
-    <dt>Get Method:</dt>
-    <dd class="value"><span class="summary-sig"><i>unreachable</i>.height(<span class="summary-sig-arg">self</span>)</span>
-        - The height of the bounding box.
-    </dd>
-  </dl>
-</td></tr></table>
-</div>
 <a name="area"></a>
 <div>
 <table class="details" border="1" cellpadding="3"
        cellspacing="0" width="100%" bgcolor="white">
 <tr><td>
   <h3 class="epydoc">area</h3>
-  <p>The area of the shape.</p>
+  <p>The area of the polygon.</p>
+  <p>See: http://mathworld.wolfram.com/PolygonArea.html</p>
   <dl class="fields">
     <dt>Get Method:</dt>
     <dd class="value"><span class="summary-sig"><i>unreachable</i>.area(<span class="summary-sig-arg">self</span>)</span>
+        - The area of the polygon.
     </dd>
   </dl>
 </td></tr></table>
 </div>
-<a name="centroid"></a>
+<a name="bounding_box"></a>
 <div>
 <table class="details" border="1" cellpadding="3"
        cellspacing="0" width="100%" bgcolor="white">
 <tr><td>
-  <h3 class="epydoc">centroid</h3>
-  <p>The mass center of the shape.</p>
+  <h3 class="epydoc">bounding_box</h3>
+  <p>The bounding box of the shape.</p>
   <dl class="fields">
     <dt>Get Method:</dt>
-    <dd class="value"><span class="summary-sig"><i>unreachable</i>.centroid(<span class="summary-sig-arg">self</span>)</span>
+    <dd class="value"><span class="summary-sig"><i>unreachable</i>.bounding_box(<span class="summary-sig-arg">self</span>)</span>
     </dd>
   </dl>
 </td></tr></table>
@@ -425,13 +341,18 @@ object --+
       <th>&nbsp;&nbsp;&nbsp;<a
         href="help.html">Help</a>&nbsp;&nbsp;&nbsp;</th>
 
-      <th class="navbar" width="100%"></th>
+  <!-- Project homepage -->
+      <th class="navbar" align="right" width="100%">
+        <table border="0" cellpadding="0" cellspacing="0">
+          <tr><th class="navbar" align="center"
+            ><a class="navbar" target="_top" href="http://elemel.se/pinky/">Pinky</a></th>
+          </tr></table></th>
   </tr>
 </table>
 <table border="0" cellpadding="0" cellspacing="0" width="100%%">
   <tr>
     <td align="left" class="footer">
-    Generated by Epydoc 3.0.1 on Sat May 22 11:57:31 2010
+    Generated by Epydoc 3.0.1 on Sun May 30 14:22:47 2010
     </td>
     <td align="right" class="footer">
       <a target="mainFrame" href="http://epydoc.sourceforge.net"

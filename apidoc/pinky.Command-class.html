@@ -3,7 +3,7 @@
           "DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head>
-  <title>pinky.ParseError</title>
+  <title>pinky.Command</title>
   <link rel="stylesheet" href="epydoc.css" type="text/css" />
   <script type="text/javascript" src="epydoc.js"></script>
 </head>
@@ -30,7 +30,12 @@
       <th>&nbsp;&nbsp;&nbsp;<a
         href="help.html">Help</a>&nbsp;&nbsp;&nbsp;</th>
 
-      <th class="navbar" width="100%"></th>
+  <!-- Project homepage -->
+      <th class="navbar" align="right" width="100%">
+        <table border="0" cellpadding="0" cellspacing="0">
+          <tr><th class="navbar" align="center"
+            ><a class="navbar" target="_top" href="http://elemel.se/pinky/">Pinky</a></th>
+          </tr></table></th>
   </tr>
 </table>
 <table width="100%" cellpadding="0" cellspacing="0">
@@ -38,77 +43,56 @@
     <td width="100%">
       <span class="breadcrumbs">
         <a href="pinky-module.html">Module&nbsp;pinky</a> ::
-        Class&nbsp;ParseError
+        Class&nbsp;Command
       </span>
     </td>
     <td>
       <table cellpadding="0" cellspacing="0">
         <!-- hide/show private -->
-        <tr><td align="right"><span class="options">[<a href="javascript:void(0);" class="privatelink"
-    onclick="toggle_private();">hide&nbsp;private</a>]</span></td></tr>
-        <tr><td align="right"><span class="options"
-            >[<a href="frames.html" target="_top">frames</a
-            >]&nbsp;|&nbsp;<a href="pinky.ParseError-class.html"
-            target="_top">no&nbsp;frames</a>]</span></td></tr>
       </table>
     </td>
   </tr>
 </table>
 <!-- ==================== CLASS DESCRIPTION ==================== -->
-<h1 class="epydoc">Class ParseError</h1><p class="nomargin-top"><span class="codelink"><a href="pinky-pysrc.html#ParseError">source&nbsp;code</a></span></p>
+<h1 class="epydoc">Class Command</h1><p class="nomargin-top"></p>
 <pre class="base-tree">
-              object --+        
-                       |        
-exceptions.BaseException --+    
-                           |    
-        exceptions.Exception --+
-                               |
-                              <strong class="uidshort">ParseError</strong>
+object --+
+         |
+        <strong class="uidshort">Command</strong>
 </pre>
 
+<dl><dt>Known Subclasses:</dt>
+<dd>
+      <ul class="subclass-list">
+<li><a href="pinky.Closepath-class.html">Closepath</a></li><li>, <a href="pinky.Curveto-class.html">Curveto</a></li><li>, <a href="pinky.EllipticalArc-class.html">EllipticalArc</a></li><li>, <a href="pinky.Lineto-class.html">Lineto</a></li><li>, <a href="pinky.Moveto-class.html">Moveto</a></li><li>, <a href="pinky.QuadraticBezierCurveto-class.html">QuadraticBezierCurveto</a></li><li>, <a href="pinky.SmoothCurveto-class.html">SmoothCurveto</a></li><li>, <a href="pinky.SmoothQuadraticBezierCurveto-class.html">SmoothQuadraticBezierCurveto</a></li>  </ul>
+</dd></dl>
+
 <hr />
-<p>A parse error.</p>
+<p>The base class for path commands.</p>
 
 <!-- ==================== INSTANCE METHODS ==================== -->
 <a name="section-InstanceMethods"></a>
 <table class="summary" border="1" cellpadding="3"
        cellspacing="0" width="100%" bgcolor="white">
 <tr bgcolor="#70b0f0" class="table-header">
-  <td colspan="2" class="table-header">
-    <table border="0" cellpadding="0" cellspacing="0" width="100%">
-      <tr valign="top">
-        <td align="left"><span class="table-header">Instance Methods</span></td>
-        <td align="right" valign="top"
-         ><span class="options">[<a href="#section-InstanceMethods"
-         class="privatelink" onclick="toggle_private();"
-         >hide private</a>]</span></td>
-      </tr>
-    </table>
-  </td>
+  <td align="left" colspan="2" class="table-header">
+    <span class="table-header">Instance Methods</span></td>
 </tr>
   <tr>
     <td colspan="2" class="summary">
-    <p class="indent-wrapped-lines"><b>Inherited from <code>exceptions.Exception</code></b>:
-      <code>__init__</code>,
-      <code>__new__</code>
-      </p>
-    <p class="indent-wrapped-lines"><b>Inherited from <code>exceptions.BaseException</code></b>:
+    <p class="indent-wrapped-lines"><b>Inherited from <code>object</code></b>:
       <code>__delattr__</code>,
+      <code>__format__</code>,
       <code>__getattribute__</code>,
-      <code>__getitem__</code>,
-      <code>__getslice__</code>,
+      <code>__hash__</code>,
+      <code>__init__</code>,
+      <code>__new__</code>,
       <code>__reduce__</code>,
+      <code>__reduce_ex__</code>,
       <code>__repr__</code>,
       <code>__setattr__</code>,
-      <code>__setstate__</code>,
-      <code>__str__</code>,
-      <code>__unicode__</code>
-      </p>
-    <p class="indent-wrapped-lines"><b>Inherited from <code>object</code></b>:
-      <code>__format__</code>,
-      <code>__hash__</code>,
-      <code>__reduce_ex__</code>,
       <code>__sizeof__</code>,
+      <code>__str__</code>,
       <code>__subclasshook__</code>
       </p>
     </td>
@@ -119,24 +103,11 @@ exceptions.BaseException --+
 <table class="summary" border="1" cellpadding="3"
        cellspacing="0" width="100%" bgcolor="white">
 <tr bgcolor="#70b0f0" class="table-header">
-  <td colspan="2" class="table-header">
-    <table border="0" cellpadding="0" cellspacing="0" width="100%">
-      <tr valign="top">
-        <td align="left"><span class="table-header">Properties</span></td>
-        <td align="right" valign="top"
-         ><span class="options">[<a href="#section-Properties"
-         class="privatelink" onclick="toggle_private();"
-         >hide private</a>]</span></td>
-      </tr>
-    </table>
-  </td>
+  <td align="left" colspan="2" class="table-header">
+    <span class="table-header">Properties</span></td>
 </tr>
   <tr>
     <td colspan="2" class="summary">
-    <p class="indent-wrapped-lines"><b>Inherited from <code>exceptions.BaseException</code></b>:
-      <code>args</code>,
-      <code>message</code>
-      </p>
     <p class="indent-wrapped-lines"><b>Inherited from <code>object</code></b>:
       <code>__class__</code>
       </p>
@@ -163,13 +134,18 @@ exceptions.BaseException --+
       <th>&nbsp;&nbsp;&nbsp;<a
         href="help.html">Help</a>&nbsp;&nbsp;&nbsp;</th>
 
-      <th class="navbar" width="100%"></th>
+  <!-- Project homepage -->
+      <th class="navbar" align="right" width="100%">
+        <table border="0" cellpadding="0" cellspacing="0">
+          <tr><th class="navbar" align="center"
+            ><a class="navbar" target="_top" href="http://elemel.se/pinky/">Pinky</a></th>
+          </tr></table></th>
   </tr>
 </table>
 <table border="0" cellpadding="0" cellspacing="0" width="100%%">
   <tr>
     <td align="left" class="footer">
-    Generated by Epydoc 3.0.1 on Sat May 22 11:57:32 2010
+    Generated by Epydoc 3.0.1 on Sun May 30 14:22:47 2010
     </td>
     <td align="right" class="footer">
       <a target="mainFrame" href="http://epydoc.sourceforge.net"
