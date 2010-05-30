@@ -122,7 +122,7 @@ def main():
         sys.stderr.write('usage: python view.py <svg>\n')
         sys.exit(1)
     document = pinky.Document(sys.argv[1])
-    document.root.matrix = pinky.Matrix.from_flip_y()
+    document.root.matrix = pinky.Matrix.create_flip_y()
     config = pyglet.gl.Config(double_buffer=True, sample_buffers=1, samples=4,
                               depth_size=8)
     window = MyWindow(document=document, fullscreen=True, config=config)
