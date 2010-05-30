@@ -316,10 +316,9 @@ class Matrix(object):
         return cls(sx, 0.0, 0.0, sy, 0.0, 0.0)
     
     @classmethod
-    def create_rotate(cls, angle, *args):
+    def create_rotate(cls, angle, cx=None, cy=None):
         """Create a rotation matrix."""
-        if args:
-            cx, cy = args
+        if cx is not None and cy is not None:
             return (cls.create_translate(cx, cy) * cls.create_rotate(angle) *
                     cls.create_translate(-cx, -cy))
         angle_rad = angle * math.pi / 180.0
