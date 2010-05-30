@@ -20,12 +20,12 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-"""SVG loader for rapid game prototyping in Python
+"""An SVG loader for rapid game prototyping in Python.
 
 Pinky tries to make it easy to use Inkscape as a game editor, without
 getting in your way.
 
-See: http://github.com/elemel/pinky
+See: U{http://github.com/elemel/pinky}
 """
 
 import math
@@ -256,23 +256,25 @@ class Matrix(object):
             if name == 'matrix':
                 matrix *= cls(*args)
             elif name == 'translate':
-                matrix *= cls.from_translate(*args)
+                matrix *= cls.create_translate(*args)
             elif name == 'scale':
-                matrix *= cls.from_scale(*args)
+                matrix *= cls.create_scale(*args)
             elif name == 'rotate':
-                matrix *= cls.from_rotate_deg(*args)
+                matrix *= cls.create_rotate(*args)
             elif name == 'skewX':
-                matrix *= cls.from_skew_x_deg(*args)
+                matrix *= cls.create_skew_x(*args)
             elif name == 'skewY':
-                matrix *= cls.from_skew_y_deg(*args)
+                matrix *= cls.create_skew_y(*args)
             else:
                 raise ParseError('invalid transform: ' + name)
         return matrix
 
     def __str__(self):
+        """Get an SVG representation of the matrix."""
         return 'matrix(%g %g %g %g %g %g)' % self.abcdef
 
     def __repr__(self):
+        """Get a Python representation of the matrix."""
         return 'Matrix(%r, %r, %r, %r, %r, %r)' % self.abcdef
 
     def __mul__(self, other):
@@ -302,48 +304,48 @@ class Matrix(object):
             raise TypeError('invalid shape type')
 
     @classmethod
-    def from_translate(cls, tx, ty=0.0):
+    def create_translate(cls, tx, ty=0.0):
         """Create a translation matrix."""
         return cls(1.0, 0.0, 0.0, 1.0, tx, ty)
 
     @classmethod
-    def from_scale(cls, sx, sy=None):
+    def create_scale(cls, sx, sy=None):
         """Create a scale matrix."""
         if sy is None:
             sy = sx
         return cls(sx, 0.0, 0.0, sy, 0.0, 0.0)
     
     @classmethod
-    def from_rotate_deg(cls, angle, *args):
+    def create_rotate(cls, angle, *args):
         """Create a rotation matrix."""
         if args:
             cx, cy = args
-            return (cls.from_translate(cx, cy) * cls.from_rotate_deg(angle) *
-                    cls.from_translate(-cx, -cy))
-        angle = angle * math.pi / 180.0
-        cos_angle = math.cos(angle)
-        sin_angle = math.sin(angle)
+            return (cls.create_translate(cx, cy) * cls.create_rotate(angle) *
+                    cls.create_translate(-cx, -cy))
+        angle_rad = angle * math.pi / 180.0
+        cos_angle = math.cos(angle_rad)
+        sin_angle = math.sin(angle_rad)
         return cls(cos_angle, sin_angle, -sin_angle, cos_angle, 0.0, 0.0)
 
     @classmethod
-    def from_skew_x_deg(cls, angle):
+    def create_skew_x(cls, angle):
         """Create a horizontal skew matrix."""
-        angle = angle * math.pi / 180.0
-        return cls(1.0, 0.0, math.tan(angle), 1.0, 0.0, 0.0)
+        angle_rad = angle * math.pi / 180.0
+        return cls(1.0, 0.0, math.tan(angle_rad), 1.0, 0.0, 0.0)
 
     @classmethod
-    def from_skew_y_deg(cls, angle):
+    def create_skew_y(cls, angle):
         """Create a vertical skew matrix."""
-        angle = angle * math.pi / 180.0
-        return cls(1.0, math.tan(angle), 0.0, 1.0, 0.0, 0.0)
+        angle_rad = angle * math.pi / 180.0
+        return cls(1.0, math.tan(angle_rad), 0.0, 1.0, 0.0, 0.0)
 
     @classmethod
-    def from_flip_x(cls):
+    def create_flip_x(cls):
         """Create a horizontal flip matrix."""
         return cls(-1.0, 0.0, 0.0, 1.0, 0.0, 0.0)
 
     @classmethod
-    def from_flip_y(cls):
+    def create_flip_y(cls):
         """Create a vertical flip matrix."""
         return cls(1.0, 0.0, 0.0, -1.0, 0.0, 0.0)
 
@@ -367,13 +369,12 @@ class Shape(object):
 
     def transform(self, matrix):
         """Get a transformed copy of the shape."""
-        x, y = matrix.transform((self.x, self.y))
-        return Point(x, y)
+        raise NotImplementedError()
 
 class BoundingBox(Shape):
     """An axis-aligned rectangle for representing shape boundaries.
 
-    See: http://www.w3.org/TR/SVG/coords.html#ObjectBoundingBox
+    See: U{http://www.w3.org/TR/SVG/coords.html#ObjectBoundingBox}
     """
 
     def __init__(self, min_x=float('inf'), min_y=float('inf'),
@@ -393,12 +394,20 @@ class BoundingBox(Shape):
                 (self.min_x, self.min_y, self.max_x, self.max_y))
 
     def add(self, shape):
-        """Expand the bounding box to contain the given shape."""
-        bounding_box = shape.bounding_box
-        self.min_x = min(self.min_x, bounding_box.min_x)
-        self.min_y = min(self.min_y, bounding_box.min_y)
-        self.max_x = max(self.max_x, bounding_box.max_x)
-        self.max_y = max(self.max_y, bounding_box.max_y)
+        """Expand the bounding box to contain the given point tuple or shape.
+        """
+        if isinstance(shape, tuple):
+            x, y = shape
+            self.min_x = min(self.min_x, x)
+            self.min_y = min(self.min_y, y)
+            self.max_x = max(self.max_x, x)
+            self.max_y = max(self.max_y, y)
+        else:
+            bounding_box = shape.bounding_box
+            self.min_x = min(self.min_x, bounding_box.min_x)
+            self.min_y = min(self.min_y, bounding_box.min_y)
+            self.max_x = max(self.max_x, bounding_box.max_x)
+            self.max_y = max(self.max_y, bounding_box.max_y)
 
     def intersects(self, other):
         """Do the two bounding boxes intersect?"""
@@ -542,7 +551,7 @@ class Polygon(Shape):
     def area(self):
         """The area of the polygon.
 
-        See: http://mathworld.wolfram.com/PolygonArea.html
+        See: U{http://mathworld.wolfram.com/PolygonArea.html}
         """
         area = 0.0
         for i in xrange(len(self.points)):
@@ -625,32 +634,30 @@ class Rect(Shape):
         return BoundingBox(self.x, self.y, self.x + self.width,
                            self.y + self.height)
 
-class Group(Shape):
-    """A group of shapes."""
-
-    def __init__(self, shapes=[]):
-        """Initialize a group from the given shapes."""
-        self.shapes = list(shapes)
-
-    def transform(self, matrix):
-        return Group(s.transform(matrix) for s in self.shapes)
-
-    @property
-    def bounding_box(self):
-        """The bounding box containing all of the shapes in the group."""
-        bounding_box = BoundingBox()
-        for shape in self.shapes:
-            bounding_box.add(shape)
-        return bounding_box
-
-    @property
-    def area(self):
-        """The sum of the area of each shape in the group."""
-        return sum(s.area for s in self.shapes)
-
 class Command(object):
     """The base class for path commands."""
-    pass
+
+    def __str__(self):
+        """Get an SVG representation of the command."""
+        raise NotImplementedError()
+
+    def __repr__(self):
+        """Get a Python representation of the command."""
+        raise NotImplementedError()
+
+    def transform(self, matrix):
+        """Get a transformed copy of the command."""
+        raise NotImplementedError()
+
+    @property
+    def endpoint(self):
+        """The endpoint of the command."""
+        raise NotImplementedError()
+
+    @property
+    def control_points(self):
+        """The control points of the command."""
+        yield self.endpoint
 
 class Moveto(Command):
     """A moveto command."""
@@ -665,6 +672,14 @@ class Moveto(Command):
     def __repr__(self):
         return 'Moveto(x=%r, y=%r)' % (self.x, self.y)
 
+    def transform(self, matrix):
+        x, y = matrix.transform((self.x, self.y))
+        return Moveto(x, y)
+
+    @property
+    def endpoint(self):
+        return self.x, self.y
+
 class Closepath(Command):
     """A closepath command."""
 
@@ -676,6 +691,13 @@ class Closepath(Command):
 
     def __repr__(self):
         return 'Closepath()'
+
+    def transform(self, matrix):
+        return Closepath()
+
+    @property
+    def endpoint(self):
+        return None
 
 class Lineto(Command):
     """A lineto command."""
@@ -689,6 +711,14 @@ class Lineto(Command):
 
     def __repr__(self):
         return 'Lineto(x=%r, y=%r)' % (self.x, self.y)
+
+    def transform(self, matrix):
+        x, y = matrix.transform((self.x, self.y))
+        return Lineto(x, y)
+
+    @property
+    def endpoint(self):
+        return self.x, self.y
 
 class Curveto(Command):
     """A curveto command."""
@@ -709,6 +739,22 @@ class Curveto(Command):
         return ('Curveto(x1=%r, y1=%r, x2=%r, y2=%r, x=%r, y=%r)' %
                 (self.x1, self.y1, self.x2, self.y2, self.x, self.y))
 
+    def transform(self, matrix):
+        x1, y1 = matrix.transform((self.x1, self.y1))
+        x2, y2 = matrix.transform((self.x2, self.y2))
+        x, y = matrix.transform((self.x, self.y))
+        return Curveto(x1, y1, x2, y2, x, y)
+
+    @property
+    def endpoint(self):
+        return self.x, self.y
+
+    @property
+    def control_points(self):
+        yield self.x1, self.y1
+        yield self.x2, self.y2
+        yield self.x, self.y
+
 class SmoothCurveto(Command):
     """A smooth curveto command."""
 
@@ -725,6 +771,20 @@ class SmoothCurveto(Command):
         return ('SmoothCurveto(x2=%r, y2=%r, x=%r, y=%r)' %
                 (self.x2, self.y2, self.x, self.y))
 
+    def transform(self, matrix):
+        x2, y2 = matrix.transform((self.x2, self.y2))
+        x, y = matrix.transform((self.x, self.y))
+        return SmoothCurveto(x2, y2, x, y)
+
+    @property
+    def endpoint(self):
+        return self.x, self.y
+
+    @property
+    def control_points(self):
+        yield self.x2, self.y2
+        yield self.x, self.y
+
 class QuadraticBezierCurveto(Command):
     """A quadratic Bezier curveto command."""
     def __init__(self, x1, y1, x, y):
@@ -740,6 +800,20 @@ class QuadraticBezierCurveto(Command):
         return ('QuadraticBezierCurveto(x1=%r, y1=%r, x=%r, y=%r)' %
                 (self.x1, self.y1, self.x, self.y))
 
+    def transform(self, matrix):
+        x1, y1 = matrix.transform((self.x1, self.y1))
+        x, y = matrix.transform((self.x, self.y))
+        return QuadraticBezierCurveto(x1, y1, x, y)
+
+    @property
+    def endpoint(self):
+        return self.x, self.y
+
+    @property
+    def control_points(self):
+        yield self.x1, self.y1
+        yield self.x, self.y
+
 class SmoothQuadraticBezierCurveto(Command):
     """A smooth quadratic Bezier curveto command."""
 
@@ -752,6 +826,18 @@ class SmoothQuadraticBezierCurveto(Command):
 
     def __repr__(self):
         return 'SmoothQuadraticBezierCurveto(x=%r, y=%r)' % (self.x, self.y)
+
+    def transform(self, matrix):
+        x, y = matrix.transform((self.x, self.y))
+        return SmoothQuadraticBezierCurveto(x, y)
+
+    @property
+    def endpoint(self):
+        return self.x, self.y
+
+    @property
+    def control_points(self):
+        yield self.x, self.y
 
 class EllipticalArc(Command):
     """An elliptical arc command."""
@@ -775,6 +861,20 @@ class EllipticalArc(Command):
                 (self.rx, self.ry, self.rotation, self.large, self.sweep,
                  self.x, self.y))
 
+    # TODO: Proper implementation.
+    def transform(self, matrix):
+        rx = self.rx
+        ry = self.ry
+        rotation = self.rotation
+        large = self.large
+        sweep = self.sweep
+        x, y = matrix.transform((self.x, self.y))
+        return EllipticalArc(rx, ry, rotation, large, sweep, x, y)
+
+    @property
+    def endpoint(self):
+        return self.x, self.y
+
 class Path(Shape):
     """A path."""
 
@@ -795,8 +895,21 @@ class Path(Shape):
         self.commands = list(commands)
         assert all(isinstance(c, Command) for c in self.commands)
 
+    def __str__(self):
+        """Get an SVG representation of the path."""
+        return ' '.join(str(c) for c in self.commands)
+
     def transform(self, matrix):
-        return self.linearize().transform(matrix)
+        return Path(c.transform(matrix) for c in self.commands)
+
+    @property
+    def bounding_box(self):
+        bounding_box = BoundingBox()
+        for command in self.commands:
+            for control_point in command.control_points:
+                if control_point is not None:
+                    bounding_box.add(control_point)
+        return bounding_box
 
     @classmethod
     def parse(cls, path_str):
@@ -954,7 +1067,6 @@ class Path(Shape):
 
     def linearize(self):
         """Linearize the path."""
-        shapes = []
         for path in self.subpaths:
             points = []
             closed = False
@@ -974,15 +1086,7 @@ class Path(Shape):
                     shape = Line(x1, y1, x2, y2)
                 else:
                     shape = Polyline(points)
-            shapes.append(shape)
-        if len(shapes) == 1:
-            return shapes[0]
-        else:
-            return Group(shapes)
-
-    def __str__(self):
-        """Format the path as an SVG path string."""
-        return ' '.join(str(c) for c in self.commands)
+            yield shape
 
 class Element(object):
     """An element."""
@@ -990,17 +1094,17 @@ class Element(object):
     def __init__(self):
         """Initialize an element."""
 
-        """The local transformation matrix of the element."""
         self.matrix = Matrix()
+        """The local transformation matrix of the element."""
 
-        """The direct attributes of the element."""
         self.attributes = {}
+        """The direct attributes of the element."""
 
-        """The children of the element in the element tree."""
         self.children = []
+        """The children of the element in the element tree."""
 
-        """The shapes immediately attached to the element."""
         self.shapes = []
+        """The shapes immediately attached to the element."""
 
     def get_bounding_box(self, matrix):
         """Get the bounding box of the transformed element."""
