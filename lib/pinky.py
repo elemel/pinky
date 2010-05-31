@@ -799,6 +799,7 @@ class SmoothCurveto(Command):
 
 class QuadraticBezierCurveto(Command):
     """A quadratic Bezier curveto command."""
+
     def __init__(self, x1, y1, x, y):
         self.x1 = x1
         self.y1 = y1
@@ -891,6 +892,31 @@ class EllipticalArc(Command):
     def control_points(self):
         return [(self.x, self.y)]
 
+class Subpath(Shape):
+    """A path."""
+
+    def __init__(self, commands):
+        self.commands = list(commands)
+        assert all(isinstance(c, Command) for c in self.commands)
+
+    def transform(self, matrix):
+        return Subpath(c.transform(matrix) for c in self.commands)
+
+    def get_basic_shape(self):
+        """Convert the subpath to a basic shape."""
+        if self.closed:
+            return Polygon(c.endpoint for c in self.commands[:-1])
+        elif len(self.commands) == 2:
+            x1, y1 = self.commands[0].endpoint
+            x2, y2 = self.commands[1].endpoint
+            return Line(x1, y1, x2, y2)
+        else:
+            return Polyline(c.endpoint for c in self.commands)
+
+    @property
+    def closed(self):
+        return self.commands and self.commands[-1].endpoint is None
+
 class Path(Shape):
     """A path."""
 
@@ -907,21 +933,26 @@ class Path(Shape):
                             S=SmoothCurveto, Q=QuadraticBezierCurveto,
                             T=SmoothQuadraticBezierCurveto, A=EllipticalArc)
 
-    def __init__(self, commands):
-        self.commands = list(commands)
-        assert all(isinstance(c, Command) for c in self.commands)
+    def __init__(self, subpaths):
+        self.subpaths = list(subpaths)
+        assert all(isinstance(s, Subpath) for s in self.subpaths)
 
     def __str__(self):
         """Get an SVG representation of the path."""
         return ' '.join(str(c) for c in self.commands)
 
     def transform(self, matrix):
-        return Path(c.transform(matrix) for c in self.commands)
+        return Path(s.transform(matrix) for s in self.subpaths)
 
     @property
     def bounding_box(self):
         control_points = (c.control_points for c in self.commands)
         return BoundingBox.from_points(chain(*control_points))
+
+    @property
+    def commands(self):
+        commands = (s.commands for s in self.subpaths)
+        return chain(*commands)
 
     @classmethod
     def parse(cls, path_str):
@@ -934,7 +965,8 @@ class Path(Shape):
             command_class = cls._command_classes[name]
             command = command_class(*args)
             commands.append(command)
-        return Path(commands)
+        subpaths = cls._split_subpaths(commands)
+        return Path(Subpath(s) for s in subpaths)
 
     @classmethod
     def _parse_commands(cls, path_str):
@@ -1065,28 +1097,20 @@ class Path(Shape):
             cx, cy = x, y
             yield command
 
-    @property
-    def subpaths(self):
-        """Iterate over the subpaths of the path."""
-        commands = []
-        for command in self.commands:
-            if commands and isinstance(command, Moveto):
-                yield Path(commands)
-                del commands[:]
-            commands.append(command)
-        if commands:
-            yield Path(commands)
+    @classmethod
+    def _split_subpaths(self, commands):
+        subpath = []
+        for command in commands:
+            if subpath and isinstance(command, Moveto):
+                yield subpath
+                subpath = []
+            subpath.append(command)
+        if subpath:
+            yield subpath
 
     def get_basic_shapes(self):
         """Convert the path to basic shapes."""
-        for path in self.subpaths:
-            points = [c.endpoint for c in path.commands]
-            if points and points[-1] is None:
-                yield Polygon(points[:-1])
-            elif len(points) == 2:
-                yield Line(*chain(*points))
-            else:
-                yield Polyline(points)
+        return [s.get_basic_shape() for s in self.subpaths]
 
 class Element(object):
     """An element."""
