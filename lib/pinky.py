@@ -28,6 +28,7 @@ getting in your way.
 See: U{http://github.com/elemel/pinky}
 """
 
+from itertools import chain
 import math
 import re
 from xml.dom import minidom
@@ -370,6 +371,11 @@ class Shape(object):
         """Get a transformed copy of the shape."""
         raise NotImplementedError()
 
+    def get_bounding_box(self, matrix):
+        """Get the bounding box of the shape after applying the given
+        transformation matrix."""
+        return self.transform(matrix).bounding_box
+
 class BoundingBox(Shape):
     """An axis-aligned rectangle for representing shape boundaries.
 
@@ -392,17 +398,22 @@ class BoundingBox(Shape):
         return ('BoundingBox(min_x=%r, min_y=%r, max_x=%r, max_y=%r)' %
                 (self.min_x, self.min_y, self.max_x, self.max_y))
 
-    def add(self, shape):
+    def add(self, shape, matrix=None):
         """Expand the bounding box to contain the given point tuple or shape.
         """
         if isinstance(shape, tuple):
+            if matrix is not None:
+                shape = matrix.transform(shape)
             x, y = shape
             self.min_x = min(self.min_x, x)
             self.min_y = min(self.min_y, y)
             self.max_x = max(self.max_x, x)
             self.max_y = max(self.max_y, y)
         else:
-            bounding_box = shape.bounding_box
+            if matrix is None:
+                bounding_box = shape.bounding_box
+            else:
+                bounding_box = shape.get_bounding_box(matrix)
             self.min_x = min(self.min_x, bounding_box.min_x)
             self.min_y = min(self.min_y, bounding_box.min_y)
             self.max_x = max(self.max_x, bounding_box.max_x)
@@ -437,6 +448,13 @@ class BoundingBox(Shape):
         cx = 0.5 * (self.min_x + self.max_x)
         cy = 0.5 * (self.min_y + self.max_y)
         return cx, cy
+
+    @classmethod
+    def from_shapes(cls, shapes, matrix=None):
+        bounding_box = cls()
+        for shape in shapes:
+            bounding_box.add(shape, matrix)
+        return bounding_box
 
 class Point(Shape):
     """A point."""
@@ -656,7 +674,7 @@ class Command(object):
     @property
     def control_points(self):
         """The control points of the command."""
-        yield self.endpoint
+        raise NotImplementedError()
 
 class Moveto(Command):
     """A moveto command."""
@@ -679,6 +697,10 @@ class Moveto(Command):
     def endpoint(self):
         return self.x, self.y
 
+    @property
+    def control_points(self):
+        return [(self.x, self.y)]
+
 class Closepath(Command):
     """A closepath command."""
 
@@ -697,6 +719,10 @@ class Closepath(Command):
     @property
     def endpoint(self):
         return None
+
+    @property
+    def control_points(self):
+        return []
 
 class Lineto(Command):
     """A lineto command."""
@@ -718,6 +744,10 @@ class Lineto(Command):
     @property
     def endpoint(self):
         return self.x, self.y
+
+    @property
+    def control_points(self):
+        return [(self.x, self.y)]
 
 class Curveto(Command):
     """A curveto command."""
@@ -750,9 +780,7 @@ class Curveto(Command):
 
     @property
     def control_points(self):
-        yield self.x1, self.y1
-        yield self.x2, self.y2
-        yield self.x, self.y
+        return [(self.x1, self.y1), (self.x2, self.y2), (self.x, self.y)]
 
 class SmoothCurveto(Command):
     """A smooth curveto command."""
@@ -781,8 +809,7 @@ class SmoothCurveto(Command):
 
     @property
     def control_points(self):
-        yield self.x2, self.y2
-        yield self.x, self.y
+        return [(self.x2, self.y2), (self.x, self.y)]
 
 class QuadraticBezierCurveto(Command):
     """A quadratic Bezier curveto command."""
@@ -810,8 +837,7 @@ class QuadraticBezierCurveto(Command):
 
     @property
     def control_points(self):
-        yield self.x1, self.y1
-        yield self.x, self.y
+        return [(self.x1, self.y1), (self.x, self.y)]
 
 class SmoothQuadraticBezierCurveto(Command):
     """A smooth quadratic Bezier curveto command."""
@@ -836,7 +862,7 @@ class SmoothQuadraticBezierCurveto(Command):
 
     @property
     def control_points(self):
-        yield self.x, self.y
+        return [(self.x, self.y)]
 
 class EllipticalArc(Command):
     """An elliptical arc command."""
@@ -874,6 +900,11 @@ class EllipticalArc(Command):
     def endpoint(self):
         return self.x, self.y
 
+    # TODO: Proper implementation.
+    @property
+    def control_points(self):
+        return [(self.x, self.y)]
+
 class Path(Shape):
     """A path."""
 
@@ -903,12 +934,8 @@ class Path(Shape):
 
     @property
     def bounding_box(self):
-        bounding_box = BoundingBox()
-        for command in self.commands:
-            for control_point in command.control_points:
-                if control_point is not None:
-                    bounding_box.add(control_point)
-        return bounding_box
+        control_points = (c.control_points for c in self.commands)
+        return BoundingBox.from_shapes(chain(*control_points))
 
     @classmethod
     def parse(cls, path_str):
@@ -1106,12 +1133,10 @@ class Element(object):
         """The shapes immediately attached to the element."""
 
     def get_bounding_box(self, matrix):
-        """Get the bounding box of the transformed element."""
-        bounding_box = BoundingBox()
+        """Get the bounding box of the element after applying the given
+        transformation matrix."""
         matrix = matrix * self.matrix
-        for shape in self.shapes:
-            transformed_shape = matrix.transform(shape)
-            bounding_box.add(transformed_shape)
+        bounding_box = BoundingBox.from_shapes(self.shapes, matrix)
         for child in self.children:
             child_bounding_box = child.get_bounding_box(matrix)
             bounding_box.add(child_bounding_box)
