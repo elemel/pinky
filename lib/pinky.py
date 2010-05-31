@@ -294,7 +294,7 @@ class Matrix(object):
             return NotImplemented
 
     def transform(self, shape):
-        """Get a transformed copy of a point tuple or shape."""
+        """Get a transformed copy of a point or shape."""
         if isinstance(shape, tuple):
             a, b, c, d, e, f = self.abcdef
             x, y = shape
@@ -399,12 +399,12 @@ class BoundingBox(Shape):
                 (self.min_x, self.min_y, self.max_x, self.max_y))
 
     def add(self, shape, matrix=None):
-        """Expand the bounding box to contain the given point tuple or shape.
-        """
+        """Expand the bounding box to contain the given point or shape."""
         if isinstance(shape, tuple):
-            if matrix is not None:
-                shape = matrix.transform(shape)
-            x, y = shape
+            if matrix is None:
+                x, y = shape
+            else:
+                x, y = matrix.transform(shape)
             self.min_x = min(self.min_x, x)
             self.min_y = min(self.min_y, y)
             self.max_x = max(self.max_x, x)
@@ -455,34 +455,6 @@ class BoundingBox(Shape):
         for shape in shapes:
             bounding_box.add(shape, matrix)
         return bounding_box
-
-class Point(Shape):
-    """A point."""
-
-    def __init__(self, x, y):
-        self.x = x
-        self.y = y
-
-    def __repr__(self):
-        return 'Point(x=%r, y=%r)' % (self.x, self.y)
-
-    def transform(self, matrix):
-        x, y = matrix.transform((self.x, self.y))
-        return Point(x, y)
-
-    @property
-    def bounding_box(self):
-        return BoundingBox(self.x, self.y, self.x, self.y)
-
-    @property
-    def area(self):
-        """The area of a point is always zero."""
-        return 0.0
-
-    @property
-    def centroid(self):
-        """The point itself."""
-        return self.x, self.y
 
 class Line(Shape):
     """A line."""
