@@ -293,16 +293,14 @@ class Matrix(object):
         else:
             return NotImplemented
 
-    def transform(self, shape):
-        """Get a transformed copy of a point or shape."""
-        if isinstance(shape, tuple):
-            a, b, c, d, e, f = self.abcdef
-            x, y = shape
-            return a * x + c * y + e, b * x + d * y + f
-        elif isinstance(shape, Shape):
-            return shape.transform(self)
-        else:
-            raise TypeError('invalid shape type')
+    def transform_point(self, x, y):
+        """Get a transformed copy of a point."""
+        a, b, c, d, e, f = self.abcdef
+        return a * x + c * y + e, b * x + d * y + f
+
+    def transform_shape(self, shape):
+        """Get a transformed copy of a shape."""
+        return shape.transform(self)
 
     @classmethod
     def create_translate(cls, tx, ty=0.0):
@@ -398,13 +396,22 @@ class BoundingBox(Shape):
         return ('BoundingBox(min_x=%r, min_y=%r, max_x=%r, max_y=%r)' %
                 (self.min_x, self.min_y, self.max_x, self.max_y))
 
-    def add(self, shape, matrix=None):
-        """Expand the bounding box to contain the given point or shape."""
+    def add_point(self, x, y, matrix=None):
+        """Expand the bounding box to contain the given point."""
+        if matrix is not None:
+            x, y = matrix.transform_point(x, y)
+        self.min_x = min(self.min_x, x)
+        self.min_y = min(self.min_y, y)
+        self.max_x = max(self.max_x, x)
+        self.max_y = max(self.max_y, y)
+
+    def add_shape(self, shape, matrix=None):
+        """Expand the bounding box to contain the given shape."""
         if isinstance(shape, tuple):
             if matrix is None:
                 x, y = shape
             else:
-                x, y = matrix.transform(shape)
+                x, y = matrix.transform_point(shape)
             self.min_x = min(self.min_x, x)
             self.min_y = min(self.min_y, y)
             self.max_x = max(self.max_x, x)
@@ -450,10 +457,17 @@ class BoundingBox(Shape):
         return cx, cy
 
     @classmethod
+    def from_points(cls, points, matrix=None):
+        bounding_box = cls()
+        for x, y in points:
+            bounding_box.add_point(x, y, matrix)
+        return bounding_box
+
+    @classmethod
     def from_shapes(cls, shapes, matrix=None):
         bounding_box = cls()
         for shape in shapes:
-            bounding_box.add(shape, matrix)
+            bounding_box.add_shape(shape, matrix)
         return bounding_box
 
 class Line(Shape):
@@ -469,8 +483,8 @@ class Line(Shape):
                 (self.x1, self.y1, self.x2, self.y2))
 
     def transform(self, matrix):
-        x1, y1 = matrix.transform(self.p1)
-        x2, y2 = matrix.transform(self.p2)
+        x1, y1 = matrix.transform_point(self.x1, self.y1)
+        x2, y2 = matrix.transform_point(self.x2, self.y2)
         return Line(x1, y1, x2, y2)
 
     @property
@@ -513,7 +527,7 @@ class Polyline(Shape):
         return 'Polyline(%r)' % self.points
 
     def transform(self, matrix):
-        return Polyline(matrix.transform(p) for p in self.points)
+        return Polyline(matrix.transform_point(x, y) for x, y in self.points)
 
     @property
     def area(self):
@@ -534,7 +548,7 @@ class Polygon(Shape):
         return 'Polygon(%r)' % self.points
 
     def transform(self, matrix):
-        return Polygon(matrix.transform(p) for p in self.points)
+        return Polygon(matrix.transform_point(x, y) for x, y in self.points)
 
     @property
     def area(self):
@@ -582,8 +596,8 @@ class Circle(Shape):
         The given transform should only translate, scale, and rotate the
         circle. The absolute values of the x scale and y scale should be equal.
         """
-        cx, cy = matrix.transform((self.cx, self.cy))
-        px, py = matrix.transform((self.cx + self.r, self.cy))
+        cx, cy = matrix.transform_point(self.cx, self.cy)
+        px, py = matrix.transform_point(self.cx + self.r, self.cy)
         r = math.sqrt((px - cx) ** 2 + (py - cy) ** 2)
         return Circle(cx, cy, r)
 
@@ -662,7 +676,7 @@ class Moveto(Command):
         return 'Moveto(x=%r, y=%r)' % (self.x, self.y)
 
     def transform(self, matrix):
-        x, y = matrix.transform((self.x, self.y))
+        x, y = matrix.transform_point(self.x, self.y)
         return Moveto(x, y)
 
     @property
@@ -710,7 +724,7 @@ class Lineto(Command):
         return 'Lineto(x=%r, y=%r)' % (self.x, self.y)
 
     def transform(self, matrix):
-        x, y = matrix.transform((self.x, self.y))
+        x, y = matrix.transform_point(self.x, self.y)
         return Lineto(x, y)
 
     @property
@@ -741,9 +755,9 @@ class Curveto(Command):
                 (self.x1, self.y1, self.x2, self.y2, self.x, self.y))
 
     def transform(self, matrix):
-        x1, y1 = matrix.transform((self.x1, self.y1))
-        x2, y2 = matrix.transform((self.x2, self.y2))
-        x, y = matrix.transform((self.x, self.y))
+        x1, y1 = matrix.transform_point(self.x1, self.y1)
+        x2, y2 = matrix.transform_point(self.x2, self.y2)
+        x, y = matrix.transform_point(self.x, self.y)
         return Curveto(x1, y1, x2, y2, x, y)
 
     @property
@@ -771,8 +785,8 @@ class SmoothCurveto(Command):
                 (self.x2, self.y2, self.x, self.y))
 
     def transform(self, matrix):
-        x2, y2 = matrix.transform((self.x2, self.y2))
-        x, y = matrix.transform((self.x, self.y))
+        x2, y2 = matrix.transform_point(self.x2, self.y2)
+        x, y = matrix.transform_point(self.x, self.y)
         return SmoothCurveto(x2, y2, x, y)
 
     @property
@@ -799,8 +813,8 @@ class QuadraticBezierCurveto(Command):
                 (self.x1, self.y1, self.x, self.y))
 
     def transform(self, matrix):
-        x1, y1 = matrix.transform((self.x1, self.y1))
-        x, y = matrix.transform((self.x, self.y))
+        x1, y1 = matrix.transform_point(self.x1, self.y1)
+        x, y = matrix.transform_point(self.x, self.y)
         return QuadraticBezierCurveto(x1, y1, x, y)
 
     @property
@@ -825,7 +839,7 @@ class SmoothQuadraticBezierCurveto(Command):
         return 'SmoothQuadraticBezierCurveto(x=%r, y=%r)' % (self.x, self.y)
 
     def transform(self, matrix):
-        x, y = matrix.transform((self.x, self.y))
+        x, y = matrix.transform_point(self.x, self.y)
         return SmoothQuadraticBezierCurveto(x, y)
 
     @property
@@ -865,7 +879,7 @@ class EllipticalArc(Command):
         rotation = self.rotation
         large = self.large
         sweep = self.sweep
-        x, y = matrix.transform((self.x, self.y))
+        x, y = matrix.transform_point(self.x, self.y)
         return EllipticalArc(rx, ry, rotation, large, sweep, x, y)
 
     @property
@@ -907,7 +921,7 @@ class Path(Shape):
     @property
     def bounding_box(self):
         control_points = (c.control_points for c in self.commands)
-        return BoundingBox.from_shapes(chain(*control_points))
+        return BoundingBox.from_points(chain(*control_points))
 
     @classmethod
     def parse(cls, path_str):
@@ -1111,7 +1125,7 @@ class Element(object):
         bounding_box = BoundingBox.from_shapes(self.shapes, matrix)
         for child in self.children:
             child_bounding_box = child.get_bounding_box(matrix)
-            bounding_box.add(child_bounding_box)
+            bounding_box.add_shape(child_bounding_box)
         return bounding_box
 
     @property
