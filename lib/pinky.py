@@ -1077,8 +1077,8 @@ class Path(Shape):
         if commands:
             yield Path(commands)
 
-    def linearize(self):
-        """Linearize the path."""
+    def get_basic_shapes(self):
+        """Convert the path to basic shapes."""
         for path in self.subpaths:
             points = [c.endpoint for c in path.commands]
             if points and points[-1] is None:
