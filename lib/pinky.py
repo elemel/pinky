@@ -1080,25 +1080,13 @@ class Path(Shape):
     def linearize(self):
         """Linearize the path."""
         for path in self.subpaths:
-            points = []
-            closed = False
-            for command in path.commands:
-                if isinstance(command, Closepath):
-                    closed = True
-                else:
-                    point = command.x, command.y
-                    points.append(point)
-            if closed:
-                shape = Polygon(points)
+            points = [c.endpoint for c in path.commands]
+            if points and points[-1] is None:
+                yield Polygon(points[:-1])
+            elif len(points) == 2:
+                yield Line(*chain(*points))
             else:
-                if len(points) == 2:
-                    p1, p2 = points
-                    x1, y1 = p1
-                    x2, y2 = p2
-                    shape = Line(x1, y1, x2, y2)
-                else:
-                    shape = Polyline(points)
-            yield shape
+                yield Polyline(points)
 
 class Element(object):
     """An element."""
