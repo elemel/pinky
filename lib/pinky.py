@@ -773,9 +773,6 @@ class Path(Shape):
         ('[, \t\r\n]+', None),
     ])
 
-    _arg_counts = dict(M=2, Z=0, L=2, H=1, V=1, C=6, S=4, Q=4, T=2, A=7,
-                       m=2, z=0, l=2, h=1, v=1, c=6, s=4, q=4, t=2, a=7)
- 
     _command_classes = dict(M=Moveto, Z=Closepath, L=Lineto, C=Curveto,
                             S=SmoothCurveto, Q=QuadraticBezierCurveto,
                             T=SmoothQuadraticBezierCurveto, A=EllipticalArc)
@@ -843,7 +840,7 @@ class Path(Shape):
     def _split_polycommands(cls, commands):
         for command in commands:
             name = command[0]
-            arg_count = cls._arg_counts[name]
+            arg_count = len(cls._command_classes[name.upper()].__slots__)
             if len(command) - 1 > arg_count:
                 for i in xrange(1, len(command), arg_count):
                     if name == 'M' and i > 1:
