@@ -740,7 +740,7 @@ class EllipticalArc(Command):
         return [(self.x, self.y)]
 
 class Subpath(Shape):
-    """A path."""
+    """A subpath."""
 
     def __init__(self, commands):
         self.commands = list(commands)
