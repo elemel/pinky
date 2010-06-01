@@ -749,7 +749,8 @@ class Subpath(Shape):
     def transform(self, matrix):
         return Subpath(c.transform(matrix) for c in self.commands)
 
-    def get_basic_shape(self):
+    @property
+    def basic_shape(self):
         """Convert the subpath to a basic shape."""
         if self.closed:
             return Polygon(c.endpoint for c in self.commands[:-1])
@@ -952,9 +953,10 @@ class Path(Shape):
         if subpath:
             yield subpath
 
-    def get_basic_shapes(self):
+    @property
+    def basic_shapes(self):
         """Convert the path to basic shapes."""
-        return [s.get_basic_shape() for s in self.subpaths]
+        return [s.basic_shape for s in self.subpaths]
 
 class Element(object):
     """An element."""

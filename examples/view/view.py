@@ -81,7 +81,7 @@ class GameEngine(object):
 
     def add_shape(self, shape, matrix, fill, stroke):
         if isinstance(shape, pinky.Path):
-            for basic_shape in shape.get_basic_shapes():
+            for basic_shape in shape.basic_shapes:
                 self.add_shape(basic_shape, matrix, fill, stroke)
         else:
             shape_entry = shape.transform(matrix), fill, stroke
