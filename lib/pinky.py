@@ -640,238 +640,89 @@ class Rect(Shape):
 class Command(object):
     """The base class for path commands."""
 
+    __slots__ = ()
+
+    def __init__(self, *args):
+        """Initialize a command from the given arguments."""
+        for name, value in zip(self.__slots__, args):
+            setattr(self, name, value)
+
     def __str__(self):
         """Get an SVG representation of the command."""
-        raise NotImplementedError()
-
+        return '%s %s' % (self.letter,
+                          ' '.join('%g' % getattr(self, s)
+                                   for s in self.__slots__))
+ 
     def __repr__(self):
         """Get a Python representation of the command."""
-        raise NotImplementedError()
+        return '%s(%s)' % (self.__class__.__name__,
+                           ', '.join('%s=%r' % (s, getattr(self, s))
+                                     for s in self.__slots__))
 
     def transform(self, matrix):
         """Get a transformed copy of the command."""
-        raise NotImplementedError()
+        control_points = [matrix.transform_point(x, y)
+                          for x, y in self.control_points]
+        return self.__class__(*chain(*control_points))
 
     @property
     def endpoint(self):
         """The endpoint of the command."""
-        raise NotImplementedError()
+        return (self.x, self.y) if self.__slots__ else None
 
     @property
     def control_points(self):
         """The control points of the command."""
-        raise NotImplementedError()
+        args = [getattr(self, s) for s in self.__slots__]
+        return zip(args[::2], args[1::2])
 
 class Moveto(Command):
     """A moveto command."""
 
-    def __init__(self, x, y):
-        self.x = x
-        self.y = y
-
-    def __str__(self):
-        return 'M %g %g' % (self.x, self.y)
-
-    def __repr__(self):
-        return 'Moveto(x=%r, y=%r)' % (self.x, self.y)
-
-    def transform(self, matrix):
-        x, y = matrix.transform_point(self.x, self.y)
-        return Moveto(x, y)
-
-    @property
-    def endpoint(self):
-        return self.x, self.y
-
-    @property
-    def control_points(self):
-        return [(self.x, self.y)]
+    letter = 'M'
+    __slots__ = 'x', 'y'
 
 class Closepath(Command):
     """A closepath command."""
 
-    def __init__(self):
-        pass
-
-    def __str__(self):
-        return 'Z'
-
-    def __repr__(self):
-        return 'Closepath()'
-
-    def transform(self, matrix):
-        return Closepath()
-
-    @property
-    def endpoint(self):
-        return None
-
-    @property
-    def control_points(self):
-        return []
+    letter = 'Z'
+    __slots__ = ()
 
 class Lineto(Command):
     """A lineto command."""
 
-    def __init__(self, x, y):
-        self.x = x
-        self.y = y
-
-    def __str__(self):
-        return 'L %g %g' % (self.x, self.y)
-
-    def __repr__(self):
-        return 'Lineto(x=%r, y=%r)' % (self.x, self.y)
-
-    def transform(self, matrix):
-        x, y = matrix.transform_point(self.x, self.y)
-        return Lineto(x, y)
-
-    @property
-    def endpoint(self):
-        return self.x, self.y
-
-    @property
-    def control_points(self):
-        return [(self.x, self.y)]
+    letter = 'L'
+    __slots__ = 'x', 'y'
 
 class Curveto(Command):
     """A curveto command."""
 
-    def __init__(self, x1, y1, x2, y2, x, y):
-        self.x1 = x1
-        self.y1 = y1
-        self.x2 = x2
-        self.y2 = y2
-        self.x = x
-        self.y = y
-
-    def __str__(self):
-        return ('C %g %g %g %g %g %g' %
-                (self.x1, self.y1, self.x2, self.y2, self.x, self.y))
-
-    def __repr__(self):
-        return ('Curveto(x1=%r, y1=%r, x2=%r, y2=%r, x=%r, y=%r)' %
-                (self.x1, self.y1, self.x2, self.y2, self.x, self.y))
-
-    def transform(self, matrix):
-        x1, y1 = matrix.transform_point(self.x1, self.y1)
-        x2, y2 = matrix.transform_point(self.x2, self.y2)
-        x, y = matrix.transform_point(self.x, self.y)
-        return Curveto(x1, y1, x2, y2, x, y)
-
-    @property
-    def endpoint(self):
-        return self.x, self.y
-
-    @property
-    def control_points(self):
-        return [(self.x1, self.y1), (self.x2, self.y2), (self.x, self.y)]
+    letter = 'C'
+    __slots__ = 'x1', 'y1', 'x2', 'y2', 'x', 'y'
 
 class SmoothCurveto(Command):
     """A smooth curveto command."""
 
-    def __init__(self, x2, y2, x, y):
-        self.x2 = x2
-        self.y2 = y2
-        self.x = x
-        self.y = y
-
-    def __str__(self):
-        return 'S %g %g %g %g' % (self.x2, self.y2, self.x, self.y)
-
-    def __repr__(self):
-        return ('SmoothCurveto(x2=%r, y2=%r, x=%r, y=%r)' %
-                (self.x2, self.y2, self.x, self.y))
-
-    def transform(self, matrix):
-        x2, y2 = matrix.transform_point(self.x2, self.y2)
-        x, y = matrix.transform_point(self.x, self.y)
-        return SmoothCurveto(x2, y2, x, y)
-
-    @property
-    def endpoint(self):
-        return self.x, self.y
-
-    @property
-    def control_points(self):
-        return [(self.x2, self.y2), (self.x, self.y)]
+    letter = 'S'
+    __slots__ = 'x2', 'y2', 'x', 'y'
 
 class QuadraticBezierCurveto(Command):
     """A quadratic Bezier curveto command."""
 
-    def __init__(self, x1, y1, x, y):
-        self.x1 = x1
-        self.y1 = y1
-        self.x = x
-        self.y = y
-
-    def __str__(self):
-        return 'Q %g %g %g %g' % (self.x1, self.y1, self.x, self.y)
-
-    def __repr__(self):
-        return ('QuadraticBezierCurveto(x1=%r, y1=%r, x=%r, y=%r)' %
-                (self.x1, self.y1, self.x, self.y))
-
-    def transform(self, matrix):
-        x1, y1 = matrix.transform_point(self.x1, self.y1)
-        x, y = matrix.transform_point(self.x, self.y)
-        return QuadraticBezierCurveto(x1, y1, x, y)
-
-    @property
-    def endpoint(self):
-        return self.x, self.y
-
-    @property
-    def control_points(self):
-        return [(self.x1, self.y1), (self.x, self.y)]
+    letter = 'Q'
+    __slots__ = 'x1', 'y1', 'x', 'y'
 
 class SmoothQuadraticBezierCurveto(Command):
     """A smooth quadratic Bezier curveto command."""
 
-    def __init__(self, x, y):
-        self.x = x
-        self.y = y
-
-    def __str__(self):
-        return 'T %g %g' % (self.x, self.y)
-
-    def __repr__(self):
-        return 'SmoothQuadraticBezierCurveto(x=%r, y=%r)' % (self.x, self.y)
-
-    def transform(self, matrix):
-        x, y = matrix.transform_point(self.x, self.y)
-        return SmoothQuadraticBezierCurveto(x, y)
-
-    @property
-    def endpoint(self):
-        return self.x, self.y
-
-    @property
-    def control_points(self):
-        return [(self.x, self.y)]
+    letter = 'T'
+    __slots__ = 'x', 'y'
 
 class EllipticalArc(Command):
     """An elliptical arc command."""
 
-    def __init__(self, rx, ry, rotation, large, sweep, x, y):
-        self.rx = rx
-        self.ry = ry
-        self.rotation = rotation
-        self.large = large
-        self.sweep = sweep
-        self.x = x
-        self.y = y
-
-    def __str__(self):
-        return ('A %g %g %g %i %i %g %g' %
-                (self.rx, self.ry, self.rotation,
-                 self.large, self.sweep, self.x, self.y))
-
-    def __repr__(self):
-        return ('EllipticalArc(rx=%r, ry=%r, rotation=%r, large=%r, sweep=%r, x=%r, y=%r)' %
-                (self.rx, self.ry, self.rotation, self.large, self.sweep,
-                 self.x, self.y))
+    letter = 'A'
+    __slots__ = 'rx', 'ry', 'rotation', 'large', 'sweep', 'x', 'y'
 
     # TODO: Proper implementation.
     def transform(self, matrix):
@@ -882,10 +733,6 @@ class EllipticalArc(Command):
         sweep = self.sweep
         x, y = matrix.transform_point(self.x, self.y)
         return EllipticalArc(rx, ry, rotation, large, sweep, x, y)
-
-    @property
-    def endpoint(self):
-        return self.x, self.y
 
     # TODO: Proper implementation.
     @property
