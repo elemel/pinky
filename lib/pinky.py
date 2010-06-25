@@ -517,6 +517,11 @@ class Line(Shape):
         max_y = max(self.y1, self.y2)
         return BoundingBox(min_x, min_y, max_x, max_y)
 
+    @property
+    def path(self):
+        commands = [Moveto(self.x1, self.y1), Lineto(self.x2, self.y2)]
+        return Path([Subpath(commands)])
+
 class Polyline(Shape):
     """A line strip."""
 
@@ -968,19 +973,21 @@ class Element(object):
         """The local transformation matrix of the element."""
 
         self.attributes = {}
-        """The direct attributes of the element."""
+        """The local attributes of the element."""
 
         self.children = []
         """The children of the element in the element tree."""
 
-        self.shapes = []
-        """The shapes immediately attached to the element."""
+        self.shape = None
+        """The shape of the element, or None if this element has no shape."""
 
     def get_bounding_box(self, matrix):
         """Get the bounding box of the element after applying the given
         transformation matrix."""
         matrix = matrix * self.matrix
-        bounding_box = BoundingBox.from_shapes(self.shapes, matrix)
+        bounding_box = BoundingBox()
+        if self.shape is not None:
+            bounding_box.add_shape(self.shape, matrix)
         for child in self.children:
             child_bounding_box = child.get_bounding_box(matrix)
             bounding_box.add_shape(child_bounding_box)
@@ -1016,12 +1023,16 @@ class Document(object):
             pinky_element.attributes['fill'] = xml_element.getAttribute('fill')
         if xml_element.hasAttribute('stroke'):
             pinky_element.attributes['stroke'] = xml_element.getAttribute('stroke')
+        if xml_element.hasAttribute('width'):
+            pinky_element.attributes['width'] = xml_element.getAttribute('width')
+        if xml_element.hasAttribute('height'):
+            pinky_element.attributes['height'] = xml_element.getAttribute('height')
         if xml_element.nodeName == 'path':
-            self._parse_path_element(xml_element, pinky_element)
+            pinky_element.shape = self._parse_path_element(xml_element)
         elif xml_element.nodeName == 'rect':
-            self._parse_rect_element(xml_element, pinky_element)
+            pinky_element.shape = self._parse_rect_element(xml_element)
         elif xml_element.nodeName == 'circle':
-            self._parse_circle_element(xml_element, pinky_element)
+            pinky_element.shape = self._parse_circle_element(xml_element)
         for xml_child in xml_element.childNodes:
             if xml_child.nodeType == xml_child.ELEMENT_NODE:
                 if xml_child.nodeName == 'title':
@@ -1036,36 +1047,32 @@ class Document(object):
                     pinky_element.children.append(child)
         return pinky_element
     
-    def _parse_path_element(self, xml_element, pinky_element):
+    def _parse_path_element(self, xml_element):
         if xml_element.getAttribute('sodipodi:type') == 'arc':
-            return self._parse_arc_element(xml_element, pinky_element)
-        path = Path.parse(xml_element.getAttribute('d'))
-        pinky_element.shapes.append(path)
+            return self._parse_arc_element(xml_element)
+        return Path.parse(xml_element.getAttribute('d'))
     
-    def _parse_arc_element(self, xml_element, pinky_element):
+    def _parse_arc_element(self, xml_element):
         cx = float(xml_element.getAttribute('sodipodi:cx') or '0')
         cy = float(xml_element.getAttribute('sodipodi:cy') or '0')
         rx = float(xml_element.getAttribute('sodipodi:rx'))
         ry = float(xml_element.getAttribute('sodipodi:ry'))
-        circle = Circle(cx, cy, (rx + ry) / 2.0)
-        pinky_element.shapes.append(circle)
+        return Circle(cx, cy, (rx + ry) / 2.0)
     
-    def _parse_rect_element(self, xml_element, pinky_element):
+    def _parse_rect_element(self, xml_element):
         x = float(xml_element.getAttribute('x') or '0')
         y = float(xml_element.getAttribute('y') or '0')
         width = float(xml_element.getAttribute('width'))
         height = float(xml_element.getAttribute('height'))
         points = [(x, y), (x + width, y),
                   (x + width, y + height), (x, y + height)]
-        polygon = Polygon(points)
-        pinky_element.shapes.append(polygon)
+        return Polygon(points)
 
-    def _parse_circle_element(self, xml_element, pinky_element):
+    def _parse_circle_element(self, xml_element):
         cx = float(xml_element.getAttribute('cx') or '0')
         cy = float(xml_element.getAttribute('cy') or '0')
         r = float(xml_element.getAttribute('r'))
-        circle = Circle(cx, cy, r)
-        pinky_element.shapes.append(circle)
+        return Circle(cx, cy, r)
 
     def _parse_element_text(self, xml_element):
         text = ''.join(child.nodeValue for child in xml_element.childNodes

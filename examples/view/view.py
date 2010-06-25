@@ -74,8 +74,8 @@ class GameEngine(object):
         matrix = matrix * element.matrix
         fill = pinky.Color.parse(attributes.get('fill', 'none'))
         stroke = pinky.Color.parse(attributes.get('stroke', 'none'))
-        for shape in element.shapes:
-            self.add_shape(shape, matrix, fill, stroke)
+        if element.shape is not None:
+            self.add_shape(element.shape, matrix, fill, stroke)
         for child in element.children:
             self.load_shapes(child, matrix)
 
