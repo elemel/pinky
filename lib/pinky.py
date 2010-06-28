@@ -32,10 +32,90 @@ from itertools import chain
 import math
 import re
 from xml.dom import minidom
+from xml.etree import ElementTree
+
+SVG_NAMESPACE = 'http://www.w3.org/2000/svg'
+SODIPODI_NAMESPACE = 'http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd'
+INVALID = object()
 
 class ParseError(Exception):
     """A parse error."""
     pass
+
+def is_minidom_element(element):
+    return isinstance(element, minidom.Element)
+
+def is_etree_element(element):
+    return ElementTree.iselement(element)
+
+def split_etree_name(name):
+    if name.startswith('{'):
+        index = name.index('}')
+        return name[1:index], name[index + 1:]
+    else:
+        return None, name
+
+def join_etree_name(namespace, name):
+    if namespace is None:
+        return name
+    else:
+        return '{' + namespace + '}' + name
+
+def get_element_name(element):
+    if is_minidom_element(element):
+        return element.namespaceURI, element.localName
+    elif is_etree_element(element):
+        return split_etree_name(element.tag)
+    else:
+        raise TypeError('invalid element type')
+
+def get_element_attribute(element, namespace, name, default=INVALID):
+    if is_minidom_element(element):
+        if element.hasAttributeNS(namespace, name):
+            return element.getAttributeNS(namespace, name)
+        elif (namespace == element.namespaceURI and
+              element.hasAttributeNS(None, name)):
+            return element.getAttributeNS(None, name)
+        else:
+            result = default
+    elif is_etree_element(element):
+        result = element.get(join_etree_name(namespace, name), INVALID)
+        if result is INVALID:
+            if namespace == split_etree_name(element.tag)[0]:
+                result = element.get(name, default)
+            else:
+                result = default
+    else:
+        raise TypeError('invalid element type')
+    if result is INVALID:
+        raise KeyError('attribute not found: ' + name)
+    return result
+
+def get_element_text(element):
+    if is_minidom_element(element):
+        child = element.firstChild
+        if child is not None and child.nodeType == child.TEXT_NODE:
+            return child.nodeValue
+        else:
+            return ''
+    elif is_etree_element(element):
+        return element.text
+    else:
+        raise TypeError('invalid element type')
+
+def get_element_children(element):
+    if is_minidom_element(element):
+        return [n for n in element.childNodes if n.nodeType == n.ELEMENT_NODE]
+    elif is_etree_element(element):
+        return element.getchildren()
+    else:
+        raise TypeError('invalid element type')
+
+def parse_css_attributes(arg):
+    """Parse a CSS attribute list into a dictionary."""
+    lines = (l.strip() for l in arg.split(';'))
+    pairs = (l.split(':') for l in lines if l)
+    return dict((k.strip(), v.strip()) for k, v in pairs)
 
 class Color(object):
     """An RGB color with integer components in the [0, 255] range."""
@@ -227,17 +307,20 @@ class Color(object):
         return cls(red, green, blue)
 
     @property
-    def float_components(self):
-        red = float(self.red) / 255.0
-        green = float(self.green) / 255.0
-        blue = float(self.blue) / 255.0
-        return red, green, blue
+    def red_as_float(self):
+        return float(self.red) / 255.0
 
-def parse_style(style_str):
-    """Parse a CSS attribute list into a dictionary."""
-    lines = (l.strip() for l in style_str.split(';'))
-    pairs = (l.split(':') for l in lines if l)
-    return dict((k.strip(), v.strip()) for k, v in pairs)
+    @property
+    def green_as_float(self):
+        return float(self.green) / 255.0
+
+    @property
+    def blue_as_float(self):
+        return float(self.blue) / 255.0
+
+    @property
+    def components_as_float(self):
+        return self.red_as_float, self.green_as_float, self.blue_as_float
 
 class Matrix(object):
     """A transformation matrix."""
@@ -313,7 +396,7 @@ class Matrix(object):
         if sy is None:
             sy = sx
         return cls(sx, 0.0, 0.0, sy, 0.0, 0.0)
-    
+
     @classmethod
     def create_rotate(cls, angle, cx=None, cy=None):
         """Create a rotation matrix."""
@@ -356,6 +439,11 @@ class Shape(object):
         raise NotImplementedError()
 
     @property
+    def perimeter(self):
+        """The perimeter of the shape."""
+        raise NotImplementedError()
+
+    @property
     def area(self):
         """The area of the shape."""
         raise NotImplementedError()
@@ -373,6 +461,21 @@ class Shape(object):
         """Get the bounding box of the shape after applying the given
         transformation matrix."""
         return self.transform(matrix).bounding_box
+
+    @classmethod
+    def from_element(cls, element):
+        name = get_element_name(element)
+        if name == (SVG_NAMESPACE, 'circle'):
+            return Circle.from_circle_element(element)
+        elif name == (SVG_NAMESPACE, 'rect'):
+            return Rect.from_rect_element(element)
+        elif name == (SVG_NAMESPACE, 'path'):
+            if get_element_attribute(element, SODIPODI_NAMESPACE, 'type', None) == 'arc':
+                return Circle.from_arc_element(element)
+            else:
+                return Path.from_path_element(element)
+        else:
+            raise ValueError('invalid shape element')
 
 class BoundingBox(Shape):
     """An axis-aligned rectangle for representing shape boundaries.
@@ -599,7 +702,7 @@ class Circle(Shape):
         """Get a transformed copy of the circle.
 
         The given transform should only translate, scale, and rotate the
-        circle. The absolute values of the x scale and y scale should be equal.
+        circle. The scale should maintain aspect ratio.
         """
         cx, cy = matrix.transform_point(self.cx, self.cy)
         px, py = matrix.transform_point(self.cx + self.r, self.cy)
@@ -614,6 +717,21 @@ class Circle(Shape):
     def bounding_box(self):
         return BoundingBox(self.cx - self.r, self.cy - self.r,
                            self.cx + self.r, self.cy + self.r)
+
+    @classmethod
+    def from_circle_element(cls, element):
+        cx = float(get_element_attribute(element, SVG_NAMESPACE, 'cx', '0'))
+        cy = float(get_element_attribute(element, SVG_NAMESPACE, 'cy', '0'))
+        r = float(get_element_attribute(element, SVG_NAMESPACE, 'r'))
+        return cls(cx, cy, r)
+
+    @classmethod
+    def from_arc_element(cls, element):
+        cx = float(get_element_attribute(element, SODIPODI_NAMESPACE, 'cx', '0'))
+        cy = float(get_element_attribute(element, SODIPODI_NAMESPACE, 'cy', '0'))
+        rx = float(get_element_attribute(element, SODIPODI_NAMESPACE, 'rx'))
+        ry = float(get_element_attribute(element, SODIPODI_NAMESPACE, 'ry'))
+        return cls(cx, cy, (rx + ry) / 2.0)
 
 class Rect(Shape):
     """An axis-aligned rectangle with rounded corners."""
@@ -642,6 +760,19 @@ class Rect(Shape):
         return BoundingBox(self.x, self.y, self.x + self.width,
                            self.y + self.height)
 
+    # TODO: Return a Rect instance, not a Polygon instance.
+    @classmethod
+    def from_rect_element(cls, element):
+        x = float(get_element_attribute(element, SVG_NAMESPACE, 'x', '0'))
+        y = float(get_element_attribute(element, SVG_NAMESPACE, 'y', '0'))
+        width = float(get_element_attribute(element, SVG_NAMESPACE, 'width'))
+        height = float(get_element_attribute(element, SVG_NAMESPACE, 'height'))
+        rx = float(get_element_attribute(element, SVG_NAMESPACE, 'rx', '0'))
+        ry = float(get_element_attribute(element, SVG_NAMESPACE, 'ry', '0'))
+        points = [(x, y), (x + width, y),
+                  (x + width, y + height), (x, y + height)]
+        return Polygon(points)
+
 class Command(object):
     """The base class for path commands."""
 
@@ -657,7 +788,7 @@ class Command(object):
         return '%s %s' % (self.letter,
                           ' '.join('%g' % getattr(self, s)
                                    for s in self.__slots__))
- 
+
     def __repr__(self):
         """Get a Python representation of the command."""
         return '%s(%s)' % (self.__class__.__name__,
@@ -729,7 +860,7 @@ class EllipticalArc(Command):
     letter = 'A'
     __slots__ = 'rx', 'ry', 'rotation', 'large', 'sweep', 'x', 'y'
 
-    # TODO: Proper implementation.
+    # TODO: Proper implementation?
     def transform(self, matrix):
         rx = self.rx
         ry = self.ry
@@ -739,7 +870,7 @@ class EllipticalArc(Command):
         x, y = matrix.transform_point(self.x, self.y)
         return EllipticalArc(rx, ry, rotation, large, sweep, x, y)
 
-    # TODO: Proper implementation.
+    # TODO: Proper implementation?
     @property
     def control_points(self):
         return [(self.x, self.y)]
@@ -804,9 +935,15 @@ class Path(Shape):
         commands = (s.commands for s in self.subpaths)
         return chain(*commands)
 
+    @property
+    def basic_shapes(self):
+        """Convert the path to basic shapes."""
+        return [s.basic_shape for s in self.subpaths]
+
     @classmethod
-    def parse(cls, path_str):
-        command_tuples = cls._parse_commands(path_str)
+    def from_string(cls, arg):
+        assert isinstance(arg, basestring)
+        command_tuples = cls._parse_commands(arg)
         command_tuples = cls._split_polycommands(command_tuples)
         command_tuples = cls._to_absolute_commands(command_tuples)
         commands = []
@@ -817,6 +954,10 @@ class Path(Shape):
             commands.append(command)
         subpaths = cls._split_subpaths(commands)
         return Path(Subpath(s) for s in subpaths)
+
+    @classmethod
+    def from_path_element(cls, element):
+        return cls.from_string(get_element_attribute(element, SVG_NAMESPACE, 'd'))
 
     @classmethod
     def _parse_commands(cls, path_str):
@@ -958,11 +1099,6 @@ class Path(Shape):
         if subpath:
             yield subpath
 
-    @property
-    def basic_shapes(self):
-        """Convert the path to basic shapes."""
-        return [s.basic_shape for s in self.subpaths]
-
 class Element(object):
     """An element."""
 
@@ -1027,18 +1163,16 @@ class Document(object):
             pinky_element.attributes['width'] = xml_element.getAttribute('width')
         if xml_element.hasAttribute('height'):
             pinky_element.attributes['height'] = xml_element.getAttribute('height')
-        if xml_element.nodeName == 'path':
-            pinky_element.shape = self._parse_path_element(xml_element)
-        elif xml_element.nodeName == 'rect':
-            pinky_element.shape = self._parse_rect_element(xml_element)
-        elif xml_element.nodeName == 'circle':
-            pinky_element.shape = self._parse_circle_element(xml_element)
+        try:
+            pinky_element.shape = Shape.from_element(xml_element)
+        except ValueError:
+            pass
         for xml_child in xml_element.childNodes:
             if xml_child.nodeType == xml_child.ELEMENT_NODE:
                 if xml_child.nodeName == 'title':
-                    pinky_element.attributes['title'] = self._parse_element_text(xml_child)
+                    pinky_element.attributes['title'] = get_element_text(xml_child)
                 elif xml_child.nodeName == 'desc':
-                    pinky_element.attributes['desc'] = self._parse_element_text(xml_child)
+                    pinky_element.attributes['desc'] = get_element_text(xml_child)
                 elif xml_child.nodeName == 'sodipodi:namedview':
                     if xml_child.hasAttribute('pagecolor'):
                         pinky_element.attributes['pagecolor'] = xml_child.getAttribute('pagecolor')
@@ -1046,36 +1180,92 @@ class Document(object):
                     child = self._parse_element(xml_child)
                     pinky_element.children.append(child)
         return pinky_element
-    
-    def _parse_path_element(self, xml_element):
-        if xml_element.getAttribute('sodipodi:type') == 'arc':
-            return self._parse_arc_element(xml_element)
-        return Path.parse(xml_element.getAttribute('d'))
-    
-    def _parse_arc_element(self, xml_element):
-        cx = float(xml_element.getAttribute('sodipodi:cx') or '0')
-        cy = float(xml_element.getAttribute('sodipodi:cy') or '0')
-        rx = float(xml_element.getAttribute('sodipodi:rx'))
-        ry = float(xml_element.getAttribute('sodipodi:ry'))
-        return Circle(cx, cy, (rx + ry) / 2.0)
-    
-    def _parse_rect_element(self, xml_element):
-        x = float(xml_element.getAttribute('x') or '0')
-        y = float(xml_element.getAttribute('y') or '0')
-        width = float(xml_element.getAttribute('width'))
-        height = float(xml_element.getAttribute('height'))
-        points = [(x, y), (x + width, y),
-                  (x + width, y + height), (x, y + height)]
-        return Polygon(points)
 
-    def _parse_circle_element(self, xml_element):
-        cx = float(xml_element.getAttribute('cx') or '0')
-        cy = float(xml_element.getAttribute('cy') or '0')
-        r = float(xml_element.getAttribute('r'))
-        return Circle(cx, cy, r)
+class DocumentWalker(object):
+    SVG_NS = '{http://www.w3.org/2000/svg}'
+    SODIPODI_NS = '{http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd}'
 
-    def _parse_element_text(self, xml_element):
-        text = ''.join(child.nodeValue for child in xml_element.childNodes
-                       if child.nodeType == child.TEXT_NODE)
-        text = ' '.join(text.split())
-        return text
+    def __init__(self, file):
+        self.element_tree = ElementTree.parse(file)
+        self.element_stack = [None]
+        self.tag_stack = [None]
+        self.attribute_stack = [{}]
+        self.matrix_stack = [Matrix()]
+        self.shape_stack = [None]
+
+    def walk(self):
+        self.walk_element(self.element_tree.getroot())
+
+    def walk_element(self, element):
+        self.open_element(element)
+        for child in element.getchildren():
+            self.walk_element(child)
+        self.close_element()
+
+    def open_element(self, element):
+        self.element_stack.append(element)
+        self.tag_stack.append(self.strip_namespace(element.tag))
+        self.attribute_stack.append(self.parse_attributes(element))
+        self.matrix_stack.append(self.parse_matrix(element, self.matrix))
+        self.shape_stack.append(self.parse_shape(element))
+
+    def close_element(self):
+        self.shape_stack.pop()
+        self.matrix_stack.pop()
+        self.attribute_stack.pop()
+        self.tag_stack.pop()
+        self.element_stack.pop()
+
+    def parse_attributes(self, element):
+        attributes = {}
+        style_attributes = parse_css_attributes(element.get('style', ''))
+        attributes.update(style_attributes)
+        for name, value in element.attrib.iteritems():
+            attributes[self.strip_namespace(name)] = value
+        desc = element.findtext(self.SVG_NS + 'desc', '')
+        desc_attributes = parse_css_attributes(desc)
+        attributes.update(desc_attributes)
+        return attributes
+
+    def parse_matrix(self, element, matrix):
+        local_matrix_str = element.get('transform', '')
+        local_matrix = Matrix.parse(local_matrix_str)
+        return matrix * local_matrix
+
+    def parse_shape(self, element):
+        try:
+            return Shape.from_element(element)
+        except ValueError:
+            return None
+
+    def strip_namespace(self, name):
+        return name.split('}')[-1]
+
+    @property
+    def element(self):
+        return self.element_stack[-1]
+
+    @property
+    def tag(self):
+        return self.tag_stack[-1]
+
+    @property
+    def attributes(self):
+        return self.attribute_stack[-1]
+
+    def get_attribute(self, name, default=None):
+        for attributes in reversed(self.attribute_stack):
+            if name in attributes:
+                return attributes[name]
+        return default
+
+    def get_local_attribute(self, name, default=None):
+        return self.attributes.get(name, default)
+
+    @property
+    def matrix(self):
+        return self.matrix_stack[-1]
+
+    @property
+    def shape(self):
+        return self.shape_stack[-1]
