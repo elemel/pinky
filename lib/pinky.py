@@ -31,22 +31,58 @@ See: U{http://github.com/elemel/pinky}
 from itertools import chain
 import math
 import re
-from xml.dom import minidom
-from xml.etree import ElementTree
 
 SVG_NAMESPACE = 'http://www.w3.org/2000/svg'
 SODIPODI_NAMESPACE = 'http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd'
 INVALID = object()
 
-class ParseError(Exception):
-    """A parse error."""
-    pass
-
-def parse_css_attributes(arg):
+def parse_style(arg):
     """Parse a CSS attribute list into a dictionary."""
     lines = (l.strip() for l in arg.split(';'))
     pairs = (l.split(':') for l in lines if l)
     return dict((k.strip(), v.strip()) for k, v in pairs)
+
+def parse_shape(element):
+    name = element.namespaceURI, element.localName
+    if name == (SVG_NAMESPACE, 'circle'):
+        return parse_circle_shape(element)
+    elif name == (SVG_NAMESPACE, 'rect'):
+        return parse_rect_shape(element)
+    elif name == (SVG_NAMESPACE, 'path'):
+        if element.getAttributeNS(SODIPODI_NAMESPACE, 'type') == 'arc':
+            return parse_arc_shape(element)
+        else:
+            return parse_path_shape(element)
+    return None
+
+def parse_arc_shape(element):
+    cx = float(element.getAttributeNS(SODIPODI_NAMESPACE, 'cx') or '0')
+    cy = float(element.getAttributeNS(SODIPODI_NAMESPACE, 'cy') or '0')
+    rx = float(element.getAttributeNS(SODIPODI_NAMESPACE, 'rx'))
+    ry = float(element.getAttributeNS(SODIPODI_NAMESPACE, 'ry'))
+    return Circle(cx, cy, (rx + ry) / 2.0)
+
+def parse_circle_shape(element):
+    cx = float(element.getAttribute('cx') or '0')
+    cy = float(element.getAttribute('cy') or '0')
+    r = float(element.getAttribute('r'))
+    return Circle(cx, cy, r)
+
+def parse_path_shape(element):
+    d = element.getAttribute('d')
+    return Path.from_string(d)
+
+# TODO: Return a Rect instance, not a Polygon instance.
+def parse_rect_shape(element):
+    x = float(element.getAttribute('x') or '0')
+    y = float(element.getAttribute('y') or '0')
+    width = float(element.getAttribute('width'))
+    height = float(element.getAttribute('height'))
+    rx = float(element.getAttribute('rx') or '0')
+    ry = float(element.getAttribute('ry') or '0')
+    points = [(x, y), (x + width, y),
+              (x + width, y + height), (x, y + height)]
+    return Polygon(points)
 
 class Color(object):
     """An RGB color with integer components in the [0, 255] range."""
@@ -234,7 +270,7 @@ class Color(object):
             green = int(arg[3:5], 16)
             blue = int(arg[5:7], 16)
         else:
-            raise ParseError('invalid color: ' + arg)
+            raise ValueError('invalid color: ' + arg)
         return cls(red, green, blue)
 
     @property
@@ -281,7 +317,7 @@ class Matrix(object):
             elif name == 'skewY':
                 matrix *= cls.create_skew_y(*args)
             else:
-                raise ParseError('invalid transform: ' + name)
+                raise ValueError('invalid transform: ' + name)
         return matrix
 
     def __str__(self):
@@ -847,7 +883,7 @@ class Path(Shape):
     def _parse_commands(cls, path_str):
         tokens, remainder = cls._scanner.scan(path_str)
         if remainder:
-            raise ParseError('could not tokenize path: ' + remainder)
+            raise ValueError('could not tokenize path: ' + remainder)
         command = []
         for token in tokens:
             if isinstance(token, basestring):
@@ -856,7 +892,7 @@ class Path(Shape):
                     del command[:]
             else:
                 if not command:
-                    raise ParseError('argument before first command')
+                    raise ValueError('argument before first command')
                 if command[0] in 'Aa':
                     arg_index = (len(command) - 1) % 7
                     if arg_index in (0, 1):
@@ -982,141 +1018,3 @@ class Path(Shape):
             subpath.append(command)
         if subpath:
             yield subpath
-
-class XMLHelper(object):
-    def load(self, path):
-        raise NotImplementedError()
-
-    def get_namespace(self, element):
-        raise NotImplementedError()
-
-    def get_name(self, element):
-        raise NotImplementedError()
-
-    def get_namespace_and_name(self, element):
-        return self.get_namespace(element), self.get_name(element)
-
-    def get_attribute(self, element, namespace, name, default=INVALID):
-        raise NotImplementedError()
-
-    def get_text(self, element):
-        raise NotImplementedError()
-
-    def get_children(self, element):
-        raise NotImplementedError()
-
-    def parse_shape(self, element):
-        namespace_and_name = self.get_namespace_and_name(element)
-        if namespace_and_name == (SVG_NAMESPACE, 'circle'):
-            return self.parse_circle_shape(element)
-        elif namespace_and_name == (SVG_NAMESPACE, 'rect'):
-            return self.parse_rect_shape(element)
-        elif namespace_and_name == (SVG_NAMESPACE, 'path'):
-            if self.get_attribute(element, SODIPODI_NAMESPACE, 'type', None) == 'arc':
-                return self.parse_arc_shape(element)
-            else:
-                return self.parse_path_shape(element)
-        return None
-
-    def parse_arc_shape(self, element):
-        cx = float(self.get_attribute(element, SODIPODI_NAMESPACE, 'cx', '0'))
-        cy = float(self.get_attribute(element, SODIPODI_NAMESPACE, 'cy', '0'))
-        rx = float(self.get_attribute(element, SODIPODI_NAMESPACE, 'rx'))
-        ry = float(self.get_attribute(element, SODIPODI_NAMESPACE, 'ry'))
-        return Circle(cx, cy, (rx + ry) / 2.0)
-
-    def parse_circle_shape(self, element):
-        cx = float(self.get_attribute(element, SVG_NAMESPACE, 'cx', '0'))
-        cy = float(self.get_attribute(element, SVG_NAMESPACE, 'cy', '0'))
-        r = float(self.get_attribute(element, SVG_NAMESPACE, 'r'))
-        return Circle(cx, cy, r)
-
-    def parse_path_shape(self, element):
-        d = self.get_attribute(element, SVG_NAMESPACE, 'd')
-        return Path.from_string(d)
-
-    # TODO: Return a Rect instance, not a Polygon instance.
-    def parse_rect_shape(self, element):
-        x = float(self.get_attribute(element, SVG_NAMESPACE, 'x', '0'))
-        y = float(self.get_attribute(element, SVG_NAMESPACE, 'y', '0'))
-        width = float(self.get_attribute(element, SVG_NAMESPACE, 'width'))
-        height = float(self.get_attribute(element, SVG_NAMESPACE, 'height'))
-        rx = float(self.get_attribute(element, SVG_NAMESPACE, 'rx', '0'))
-        ry = float(self.get_attribute(element, SVG_NAMESPACE, 'ry', '0'))
-        points = [(x, y), (x + width, y),
-                  (x + width, y + height), (x, y + height)]
-        return Polygon(points)
-
-class DOMHelper(XMLHelper):
-    def load(self, path):
-        return minidom.parse(path).documentElement
-
-    def get_namespace(self, element):
-        return element.namespaceURI
-
-    def get_name(self, element):
-        return element.localName
-
-    def get_attribute(self, element, namespace, name, default=INVALID):
-        if element.hasAttributeNS(namespace, name):
-            return element.getAttributeNS(namespace, name)
-        elif (namespace == element.namespaceURI and
-              element.hasAttributeNS(None, name)):
-            return element.getAttributeNS(None, name)
-        elif default is INVALID:
-            raise KeyError('attribute not found: ' + name)
-        else:
-            return default
-
-    def get_text(self, element):
-        child = element.firstChild
-        if child is not None and child.nodeType == child.TEXT_NODE:
-            return child.nodeValue
-        else:
-            return ''
-
-    def get_children(self, element):
-        return [n for n in element.childNodes if n.nodeType == n.ELEMENT_NODE]
-
-class ElementTreeHelper(XMLHelper):
-    def load(self, path):
-        return ElementTree.parse(path).getroot()
-
-    def split_name(self, name):
-        if name.startswith('{'):
-            index = name.index('}')
-            return name[1:index], name[index + 1:]
-        else:
-            return None, name
-
-    def join_name(self, namespace, name):
-        if namespace is None:
-            return name
-        else:
-            return '{' + namespace + '}' + name
-
-    def get_namespace(self, element):
-        return self.split_name(element.tag)[0]
-
-    def get_name(self, element):
-        return self.split_name(element.tag)[1]
-
-    def get_namespace_and_name(self, element):
-        return self.split_name(element.tag)
-
-    def get_attribute(self, element, namespace, name, default=INVALID):
-        result = element.get(self.join_name(namespace, name), INVALID)
-        if result is INVALID:
-            if namespace == self.get_namespace(element):
-                result = element.get(name, default)
-            else:
-                result = default
-        if result is INVALID:
-            raise KeyError('attribute not found: ' + name)
-        return result
-
-    def get_text(self, element):
-        return element.text
-
-    def get_children(self, element):
-        return element.getchildren()
