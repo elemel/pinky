@@ -983,86 +983,10 @@ class Path(Shape):
         if subpath:
             yield subpath
 
-class Element(object):
-    """An element."""
-
-    def __init__(self):
-        """Initialize an element."""
-
-        self.matrix = Matrix()
-        """The local transformation matrix of the element."""
-
-        self.attributes = {}
-        """The local attributes of the element."""
-
-        self.children = []
-        """The children of the element in the element tree."""
-
-        self.shape = None
-        """The shape of the element, or None if this element has no shape."""
-
-    def get_bounding_box(self, matrix):
-        """Get the bounding box of the element after applying the given
-        transformation matrix."""
-        matrix = matrix * self.matrix
-        bounding_box = BoundingBox()
-        if self.shape is not None:
-            bounding_box.add_shape(self.shape, matrix)
-        for child in self.children:
-            child_bounding_box = child.get_bounding_box(matrix)
-            bounding_box.add_shape(child_bounding_box)
-        return bounding_box
-
-    @property
-    def bounding_box(self):
-        """The bounding box of the element."""
-        return self.get_bounding_box(Matrix())
-
-class Document(object):
-    """A document."""
-
-    def __init__(self, file):
-        """Initialize a document from the given SVG file."""
-        xml_document = minidom.parse(file)
-        xml_element = xml_document.getElementsByTagName('svg')[0]
-        self.elements = {}
-        self.root = self._parse_element(xml_element)
-
-    def _parse_element(self, xml_element):
-        pinky_element = Element()
-        pinky_element.matrix = Matrix.from_string(xml_element.getAttribute('transform'))
-        if xml_element.hasAttribute('id'):
-            id = xml_element.getAttribute('id')
-            self.elements[id] = pinky_element
-            pinky_element.attributes['id'] = id
-        if xml_element.hasAttribute('inkscape:label'):
-            pinky_element.attributes['label'] = xml_element.getAttribute('inkscape:label')
-        if xml_element.hasAttribute('style'):
-            pinky_element.attributes['style'] = xml_element.getAttribute('style')
-        if xml_element.hasAttribute('fill'):
-            pinky_element.attributes['fill'] = xml_element.getAttribute('fill')
-        if xml_element.hasAttribute('stroke'):
-            pinky_element.attributes['stroke'] = xml_element.getAttribute('stroke')
-        if xml_element.hasAttribute('width'):
-            pinky_element.attributes['width'] = xml_element.getAttribute('width')
-        if xml_element.hasAttribute('height'):
-            pinky_element.attributes['height'] = xml_element.getAttribute('height')
-        pinky_element.shape = DOMHelper().get_shape(xml_element)
-        for xml_child in xml_element.childNodes:
-            if xml_child.nodeType == xml_child.ELEMENT_NODE:
-                if xml_child.nodeName == 'title':
-                    pinky_element.attributes['title'] = DOMHelper().get_text(xml_child)
-                elif xml_child.nodeName == 'desc':
-                    pinky_element.attributes['desc'] = DOMHelper().get_text(xml_child)
-                elif xml_child.nodeName == 'sodipodi:namedview':
-                    if xml_child.hasAttribute('pagecolor'):
-                        pinky_element.attributes['pagecolor'] = xml_child.getAttribute('pagecolor')
-                else:
-                    child = self._parse_element(xml_child)
-                    pinky_element.children.append(child)
-        return pinky_element
-
 class XMLHelper(object):
+    def load(self, path):
+        raise NotImplementedError()
+
     def get_namespace(self, element):
         raise NotImplementedError()
 
@@ -1081,38 +1005,38 @@ class XMLHelper(object):
     def get_children(self, element):
         raise NotImplementedError()
 
-    def get_shape(self, element):
+    def parse_shape(self, element):
         namespace_and_name = self.get_namespace_and_name(element)
         if namespace_and_name == (SVG_NAMESPACE, 'circle'):
-            return self.get_circle_shape(element)
+            return self.parse_circle_shape(element)
         elif namespace_and_name == (SVG_NAMESPACE, 'rect'):
-            return self.get_rect_shape(element)
+            return self.parse_rect_shape(element)
         elif namespace_and_name == (SVG_NAMESPACE, 'path'):
             if self.get_attribute(element, SODIPODI_NAMESPACE, 'type', None) == 'arc':
-                return self.get_arc_shape(element)
+                return self.parse_arc_shape(element)
             else:
-                return self.get_path_shape(element)
+                return self.parse_path_shape(element)
         return None
 
-    def get_arc_shape(self, element):
+    def parse_arc_shape(self, element):
         cx = float(self.get_attribute(element, SODIPODI_NAMESPACE, 'cx', '0'))
         cy = float(self.get_attribute(element, SODIPODI_NAMESPACE, 'cy', '0'))
         rx = float(self.get_attribute(element, SODIPODI_NAMESPACE, 'rx'))
         ry = float(self.get_attribute(element, SODIPODI_NAMESPACE, 'ry'))
         return Circle(cx, cy, (rx + ry) / 2.0)
 
-    def get_circle_shape(self, element):
+    def parse_circle_shape(self, element):
         cx = float(self.get_attribute(element, SVG_NAMESPACE, 'cx', '0'))
         cy = float(self.get_attribute(element, SVG_NAMESPACE, 'cy', '0'))
         r = float(self.get_attribute(element, SVG_NAMESPACE, 'r'))
         return Circle(cx, cy, r)
 
-    def get_path_shape(self, element):
+    def parse_path_shape(self, element):
         d = self.get_attribute(element, SVG_NAMESPACE, 'd')
         return Path.from_string(d)
 
     # TODO: Return a Rect instance, not a Polygon instance.
-    def get_rect_shape(self, element):
+    def parse_rect_shape(self, element):
         x = float(self.get_attribute(element, SVG_NAMESPACE, 'x', '0'))
         y = float(self.get_attribute(element, SVG_NAMESPACE, 'y', '0'))
         width = float(self.get_attribute(element, SVG_NAMESPACE, 'width'))
@@ -1124,6 +1048,9 @@ class XMLHelper(object):
         return Polygon(points)
 
 class DOMHelper(XMLHelper):
+    def load(self, path):
+        return minidom.parse(path).documentElement
+
     def get_namespace(self, element):
         return element.namespaceURI
 
@@ -1152,6 +1079,9 @@ class DOMHelper(XMLHelper):
         return [n for n in element.childNodes if n.nodeType == n.ELEMENT_NODE]
 
 class ElementTreeHelper(XMLHelper):
+    def load(self, path):
+        return ElementTree.parse(path).getroot()
+
     def split_name(self, name):
         if name.startswith('{'):
             index = name.index('}')
