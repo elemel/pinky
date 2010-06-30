@@ -34,7 +34,6 @@ import re
 
 SVG_NAMESPACE = 'http://www.w3.org/2000/svg'
 SODIPODI_NAMESPACE = 'http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd'
-INVALID = object()
 
 def parse_style(arg):
     """Parse a CSS attribute list into a dictionary."""
@@ -43,16 +42,16 @@ def parse_style(arg):
     return dict((k.strip(), v.strip()) for k, v in pairs)
 
 def parse_shape(element):
-    name = element.namespaceURI, element.localName
-    if name == (SVG_NAMESPACE, 'circle'):
-        return parse_circle_shape(element)
-    elif name == (SVG_NAMESPACE, 'rect'):
-        return parse_rect_shape(element)
-    elif name == (SVG_NAMESPACE, 'path'):
-        if element.getAttributeNS(SODIPODI_NAMESPACE, 'type') == 'arc':
-            return parse_arc_shape(element)
-        else:
-            return parse_path_shape(element)
+    if element.namespaceURI == SVG_NAMESPACE:
+        if element.localName == 'circle':
+            return parse_circle_shape(element)
+        elif element.localName == 'rect':
+            return parse_rect_shape(element)
+        elif element.localName == 'path':
+            if element.getAttributeNS(SODIPODI_NAMESPACE, 'type') == 'arc':
+                return parse_arc_shape(element)
+            else:
+                return parse_path_shape(element)
     return None
 
 def parse_arc_shape(element):
@@ -689,6 +688,20 @@ class Rect(Shape):
                 (self.x, self.y, self.width, self.height, self.rx, self.ry))
 
     @property
+    def perimeter(self):
+        if not self.rx and not self.ry:
+            return 2.0 * (self.width + self.height)
+        else:
+            raise NotImplementedError()
+
+    @property
+    def area(self):
+        if not self.rx and not self.ry:
+            return self.width * self.height
+        else:
+            raise NotImplementedError()
+
+    @property
     def centroid(self):
         return self.x + 0.5 * self.width, self.y + 0.5 * self.height
 
@@ -696,6 +709,13 @@ class Rect(Shape):
     def bounding_box(self):
         return BoundingBox(self.x, self.y, self.x + self.width,
                            self.y + self.height)
+
+    @property
+    def polygon(self):
+        return Polygon([(self.x, self.y),
+                        (self.x + self.width, self.y),
+                        (self.x + self.width, self.y + self.height),
+                        (self.x, self.y + self.height)])
 
 class Command(object):
     """The base class for path commands."""
